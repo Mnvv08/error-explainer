@@ -202,6 +202,99 @@ footer {
     }
 }
 
+/* Practice Page */
+.practice-main {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 250px);
+}
+
+.explainer-section {
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+}
+
+.explainer-section h2 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.subheading {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #777;
+    margin-bottom: 2rem;
+}
+
+.editor-container {
+    background-color: #1E1E1E; /* Dark background like code editor */
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    text-align: left;
+}
+
+.editor-header {
+    background-color: #2D2D2D;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #444;
+}
+
+.language-selector {
+    background-color: #3C3C3C;
+    color: #FFF;
+    border: 1px solid #555;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    outline: none;
+    cursor: pointer;
+}
+
+.code-editor {
+    width: 100%;
+    min-height: 300px;
+    background-color: transparent;
+    color: #D4D4D4; /* VS Code light text color */
+    border: none;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    resize: vertical;
+    outline: none;
+}
+
+.code-editor::placeholder {
+    color: #666;
+}
+
+.editor-footer {
+    padding: 15px;
+    background-color: #2D2D2D;
+    text-align: right;
+    border-top: 1px solid #444;
+}
+
+.explain-btn {
+    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+}
+
+/* Active Nav Link */
+.nav-links a.active {
+    color: var(--primary-green);
+    border-bottom: 3px solid var(--primary-green);
+    padding-bottom: 5px;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
     .hero {

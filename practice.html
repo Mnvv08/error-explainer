@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugBlaster 🐛 | Practice</title>
+    <meta name="description" content="Paste your broken code and get simple explanations.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BugBlaster 🐛</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="practice.html" class="active">Practice</a></li>
+            <li><a href="#">Leaderboard</a></li>
+        </ul>
+    </nav>
+
+    <main class="practice-main">
+        <section class="explainer-section fade-in">
+            <h2>Paste Your Broken Code 🐛</h2>
+            <p class="subheading">We'll explain the error in simple English — no confusing jargon!</p>
+            
+            <div class="editor-container">
+                <div class="editor-header">
+                    <select class="language-selector">
+                        <option value="python">Python</option>
+                        <option value="c">C</option>
+                        <option value="java">Java</option>
+                    </select>
+                </div>
+                <textarea class="code-editor" placeholder="Paste your broken code here..."></textarea>
+                <div class="editor-footer">
+                    <button class="cta-button explain-btn">Explain Error</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built for beginner coders 💚</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

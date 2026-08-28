@@ -18,28 +18,61 @@
             <li><a href="practice.html" class="active">Practice</a></li>
             <li><a href="#">Leaderboard</a></li>
         </ul>
+        <div class="xp-display">XP: <span id="xp-counter">0</span></div>
     </nav>
 
     <main class="practice-main">
         <section class="explainer-section fade-in">
             <h2>Paste Your Broken Code 🐛</h2>
-            <p class="subheading">We'll explain the error in simple English — no confusing jargon!</p>
+            <p class="subheading">We'll explain the error in plain English — no confusing jargon!</p>
             
             <div class="editor-container">
                 <div class="editor-header">
-                    <select class="language-selector">
+                    <select class="language-selector" id="language-select">
                         <option value="python">Python</option>
                         <option value="c">C</option>
                         <option value="java">Java</option>
                     </select>
                 </div>
-                <textarea class="code-editor" placeholder="Paste your broken code here..."></textarea>
+                <textarea class="code-editor" id="code-input" placeholder="Paste your broken code here..."></textarea>
                 <div class="editor-footer">
-                    <button class="cta-button explain-btn">Explain Error</button>
+                    <button class="cta-button explain-btn" id="blast-btn">Blast the Bug 🚀</button>
+                </div>
+            </div>
+
+            <div id="loading-spinner" class="loading-container hidden">
+                <div class="spinner">🐛</div>
+                <p>Blasting your bug... 💥</p>
+            </div>
+
+            <div id="results-card" class="results-card hidden fade-in">
+                <div class="result-section red-border">
+                    <h3>🔴 What's Wrong?</h3>
+                    <p id="res-error"></p>
+                </div>
+                <div class="result-section yellow-border">
+                    <h3>💡 Why did this happen?</h3>
+                    <p id="res-why"></p>
+                </div>
+                <div class="result-section green-border">
+                    <div class="section-header">
+                        <h3>✅ Fixed Code</h3>
+                        <button class="copy-btn" id="copy-btn">Copy Code</button>
+                    </div>
+                    <pre><code id="res-fix"></code></pre>
+                </div>
+                <div class="result-section blue-border">
+                    <h3>🎯 Practice Questions</h3>
+                    <ul id="res-questions"></ul>
                 </div>
             </div>
         </section>
     </main>
+
+    <!-- XP Popup -->
+    <div id="xp-popup" class="xp-popup hidden">
+        🎉 +10 XP earned!
+    </div>
 
     <footer>
         <p>Built for beginner coders 💚</p>

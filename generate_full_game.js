@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+const fs = require('fs');
+
+const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -340,63 +342,33 @@
         const CHALLENGE_BANK = [
             // Python
             { lang: 'Python', code: 'print "Hello"', correctLine: 1, hint: 'missing parentheses', explain: 'Python 3 requires parentheses for print().' },
-            { lang: 'Python', code: 'for i in range(5):
-    print(i', correctLine: 2, hint: 'missing closing bracket', explain: 'Missing closing parenthesis on print().' },
-            { lang: 'Python', code: 'name = input("Name: ")
-if name = "Bob":
-    print("Hi")', correctLine: 2, hint: 'should be ==', explain: 'Use == for comparison, not =.' },
-            { lang: 'Python', code: 'def add(a,b):
-    return a - b', correctLine: 2, hint: 'should be + not -', explain: 'Function is named add, so it should use +.' },
+            { lang: 'Python', code: 'for i in range(5):\n    print(i', correctLine: 2, hint: 'missing closing bracket', explain: 'Missing closing parenthesis on print().' },
+            { lang: 'Python', code: 'name = input("Name: ")\nif name = "Bob":\n    print("Hi")', correctLine: 2, hint: 'should be ==', explain: 'Use == for comparison, not =.' },
+            { lang: 'Python', code: 'def add(a,b):\n    return a - b', correctLine: 2, hint: 'should be + not -', explain: 'Function is named add, so it should use +.' },
             
             // Java
-            { lang: 'Java', code: 'int x = 5;
-if(x = 5) {
-    System.out.println("Yes");
-}', correctLine: 2, hint: 'should be ==', explain: 'Use == for comparison in Java.' },
-            { lang: 'Java', code: 'int[] arr = {1,2,3};
-for(int i=0; i<=3; i++) {
-    System.out.println(arr[i]);
-}', correctLine: 2, hint: 'should be i<3', explain: 'Array bounds are 0 to length-1.' },
-            { lang: 'Java', code: 'System.out.println("Hi" 
-int x = 5;', correctLine: 1, hint: 'missing closing bracket', explain: 'Missing ); at end of println.' },
-            { lang: 'Java', code: 'int x = "hello";
-System.out.println(x);', correctLine: 1, hint: 'wrong type', explain: 'Cannot assign a String to an int variable.' },
+            { lang: 'Java', code: 'int x = 5;\nif(x = 5) {\n    System.out.println("Yes");\n}', correctLine: 2, hint: 'should be ==', explain: 'Use == for comparison in Java.' },
+            { lang: 'Java', code: 'int[] arr = {1,2,3};\nfor(int i=0; i<=3; i++) {\n    System.out.println(arr[i]);\n}', correctLine: 2, hint: 'should be i<3', explain: 'Array bounds are 0 to length-1.' },
+            { lang: 'Java', code: 'System.out.println("Hi" \nint x = 5;', correctLine: 1, hint: 'missing closing bracket', explain: 'Missing ); at end of println.' },
+            { lang: 'Java', code: 'int x = "hello";\nSystem.out.println(x);', correctLine: 1, hint: 'wrong type', explain: 'Cannot assign a String to an int variable.' },
             
             // C
-            { lang: 'C', code: 'int x = 5
-printf("%d", x);', correctLine: 1, hint: 'missing semicolon', explain: 'C statements must end with a semicolon.' },
-            { lang: 'C', code: 'for(int i=0; i<5; i--) {
-    printf("%d", i);
-}', correctLine: 1, hint: 'should be i++', explain: 'Decrementing i causes an infinite loop. Use i++.' },
-            { lang: 'C', code: '#include stdio.h
-int main() { return 0; }', correctLine: 1, hint: 'missing angle brackets', explain: 'Include needs <stdio.h> or "stdio.h".' },
-            { lang: 'C', code: 'int arr[3] = {1,2,3};
-arr[3] = 5;', correctLine: 2, hint: 'index out of bounds', explain: 'Valid indices for size 3 are 0, 1, 2.' },
+            { lang: 'C', code: 'int x = 5\nprintf("%d", x);', correctLine: 1, hint: 'missing semicolon', explain: 'C statements must end with a semicolon.' },
+            { lang: 'C', code: 'for(int i=0; i<5; i--) {\n    printf("%d", i);\n}', correctLine: 1, hint: 'should be i++', explain: 'Decrementing i causes an infinite loop. Use i++.' },
+            { lang: 'C', code: '#include stdio.h\nint main() { return 0; }', correctLine: 1, hint: 'missing angle brackets', explain: 'Include needs <stdio.h> or "stdio.h".' },
+            { lang: 'C', code: 'int arr[3] = {1,2,3};\narr[3] = 5;', correctLine: 2, hint: 'index out of bounds', explain: 'Valid indices for size 3 are 0, 1, 2.' },
             
             // C++
-            { lang: 'C++', code: 'cout << "Hello"
-return 0;', correctLine: 1, hint: 'missing semicolon', explain: 'Missing semicolon after cout statement.' },
-            { lang: 'C++', code: 'int x = 5;
-while(x > 0) {
-    cout << x;
-}', correctLine: 2, hint: 'missing x-- causes infinite loop', explain: 'Missing decrement causes an infinite loop.' },
-            { lang: 'C++', code: 'string name = \'Bob\';
-cout << name;', correctLine: 1, hint: 'should use double quotes', explain: 'Strings use double quotes "", chars use single \'\'.' },
-            { lang: 'C++', code: 'int* p = null;
-return 0;', correctLine: 1, hint: 'should be nullptr', explain: 'In C++, use nullptr (or NULL), not null.' },
+            { lang: 'C++', code: 'cout << "Hello"\nreturn 0;', correctLine: 1, hint: 'missing semicolon', explain: 'Missing semicolon after cout statement.' },
+            { lang: 'C++', code: 'int x = 5;\nwhile(x > 0) {\n    cout << x;\n}', correctLine: 2, hint: 'missing x-- causes infinite loop', explain: 'Missing decrement causes an infinite loop.' },
+            { lang: 'C++', code: 'string name = \\'Bob\\';\ncout << name;', correctLine: 1, hint: 'should use double quotes', explain: 'Strings use double quotes "", chars use single \\'\\'.' },
+            { lang: 'C++', code: 'int* p = null;\nreturn 0;', correctLine: 1, hint: 'should be nullptr', explain: 'In C++, use nullptr (or NULL), not null.' },
             
             // JavaScript
-            { lang: 'JavaScript', code: 'let x = 5;
-if(x = 5) {
-    console.log("Yes");
-}', correctLine: 2, hint: 'should be ===', explain: 'Use === or == for comparison, not =.' },
-            { lang: 'JavaScript', code: 'console.log("Hi"
-let y = 10;', correctLine: 1, hint: 'missing closing bracket', explain: 'Missing ); at the end of console.log.' },
-            { lang: 'JavaScript', code: 'for(let i=0; i<5; i--) {
-    console.log(i);
-}', correctLine: 1, hint: 'should be i++', explain: 'Decrementing causes an infinite loop.' },
-            { lang: 'JavaScript', code: 'let arr = [1,2,3];
-console.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Valid indices are 0, 1, 2. arr[3] is undefined.' }
+            { lang: 'JavaScript', code: 'let x = 5;\nif(x = 5) {\n    console.log("Yes");\n}', correctLine: 2, hint: 'should be ===', explain: 'Use === or == for comparison, not =.' },
+            { lang: 'JavaScript', code: 'console.log("Hi"\nlet y = 10;', correctLine: 1, hint: 'missing closing bracket', explain: 'Missing ); at the end of console.log.' },
+            { lang: 'JavaScript', code: 'for(let i=0; i<5; i--) {\n    console.log(i);\n}', correctLine: 1, hint: 'should be i++', explain: 'Decrementing causes an infinite loop.' },
+            { lang: 'JavaScript', code: 'let arr = [1,2,3];\nconsole.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Valid indices are 0, 1, 2. arr[3] is undefined.' }
         ];
 
         function selectLanguage(lang, btnEl) {
@@ -468,15 +440,15 @@ console.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Va
         }
 
         function renderCode(codeStr) {
-            const lines = codeStr.split('\n');
+            const lines = codeStr.split('\\n');
             const box = document.getElementById('code-box');
             box.innerHTML = '';
             for(let i=0; i<lines.length; i++) {
                 const content = lines[i].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                box.innerHTML += `<div class="code-line" id="line-${i+1}" onclick="checkAnswer(${i+1})">
-                    <div class="line-num">${i+1}</div>
-                    <div class="line-content">${content}</div>
-                </div>`;
+                box.innerHTML += \`<div class="code-line" id="line-\${i+1}" onclick="checkAnswer(\${i+1})">
+                    <div class="line-num">\${i+1}</div>
+                    <div class="line-content">\${content}</div>
+                </div>\`;
             }
         }
 
@@ -541,7 +513,7 @@ console.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Va
                 document.getElementById('current-score').innerText = score;
             } else {
                 banner.className = 'result-banner error';
-                banner.innerText = '⏰ Time\'s Up!';
+                banner.innerText = '⏰ Time\\'s Up!';
                 score = 0;
                 document.getElementById('current-score').innerText = score;
                 const correctEl = document.getElementById('line-' + currentChallenge.correctLine);
@@ -558,3 +530,7 @@ console.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Va
     </script>
 </body>
 </html>
+`;
+
+fs.writeFileSync('/Users/manavparihar/error-explainer/game.html', htmlContent);
+console.log("Rewrote game.html with full Bug Hunter game");

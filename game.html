@@ -27,6 +27,7 @@
 
     <div id="fire-banner" class="banner hidden">You're on fire! 🔥</div>
     
+    <div style="position: relative; z-index: 50;">
     <main class="game-main fade-in">
         <header class="game-header">
             <h2>Bug Hunter 🎮</h2>
@@ -43,15 +44,15 @@
             <div class="language-selector">
                 <h3>Choose Your Language 🎯</h3>
                 <div class="lang-btns" id="language-selector-btns">
-                    <button class="lang-btn active" data-lang="Python">🐍 Python</button>
-                    <button class="lang-btn" data-lang="Java">☕ Java</button>
-                    <button class="lang-btn" data-lang="C">⚡ C</button>
-                    <button class="lang-btn" data-lang="C++">🔷 C++</button>
-                    <button class="lang-btn" data-lang="JavaScript">🌐 JavaScript</button>
-                    <button class="lang-btn" data-lang="Random">🎲 Random</button>
+                    <button id="btn-python" class="lang-btn selected" data-lang="Python">🐍 Python</button>
+                    <button id="btn-java" class="lang-btn" data-lang="Java">☕ Java</button>
+                    <button id="btn-c" class="lang-btn" data-lang="C">⚡ C</button>
+                    <button id="btn-cpp" class="lang-btn" data-lang="C++">🔷 C++</button>
+                    <button id="btn-javascript" class="lang-btn" data-lang="JavaScript">🌐 JavaScript</button>
+                    <button id="btn-random" class="lang-btn" data-lang="Random">🎲 Random</button>
                 </div>
             </div>
-            <button class="cta-button big-play-btn" id="start-hunt-btn">Start Hunt 🎯</button>
+            <button class="cta-button big-play-btn" id="start-hunt-btn" style="position: relative; z-index: 100;">Start Hunt 🎯</button>
         </div>
 
         <div id="loading-spinner" class="loading-container hidden">

@@ -27,44 +27,46 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     
+    
     // Language Preference
     let selectedLang = localStorage.getItem('bugblaster_lang_pref') || 'Python';
-    const langBtns = document.querySelectorAll('.lang-btn');
     
-    function updateLangUI() {
-        langBtns.forEach(btn => {
-            if (btn.getAttribute('data-lang') === selectedLang) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-        });
+    function selectLanguage(lang, el) {
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('selected'));
+        if (el) el.classList.add('selected');
+        
+        const newLang = lang;
+        if (newLang !== selectedLang) {
+            selectedLang = lang;
+            localStorage.setItem('bugblaster_lang_pref', selectedLang);
+            
+            // Reset score and used ids
+            score = 0;
+            localStorage.setItem('bugblaster_score', 0);
+            document.getElementById('current-score').innerText = score;
+            localStorage.removeItem('bugblaster_used_ids');
+        }
     }
-    updateLangUI();
     
-    langBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const newLang = e.target.getAttribute('data-lang');
-            if (newLang !== selectedLang) {
-                selectedLang = newLang;
-                localStorage.setItem('bugblaster_lang_pref', selectedLang);
-                updateLangUI();
-                
-                // Reset score and used ids
-                score = 0;
-                localStorage.setItem('bugblaster_score', 0);
-                currentScoreEl.innerText = score;
-                localStorage.removeItem('bugblaster_used_ids');
-            }
-        });
-    });
+    const btnPython = document.getElementById('btn-python');
+    if (btnPython) btnPython.addEventListener('click', function() { selectLanguage('Python', this); });
+    
+    const btnJava = document.getElementById('btn-java');
+    if (btnJava) btnJava.addEventListener('click', function() { selectLanguage('Java', this); });
+    
+    const btnC = document.getElementById('btn-c');
+    if (btnC) btnC.addEventListener('click', function() { selectLanguage('C', this); });
+    
+    const btnCpp = document.getElementById('btn-cpp');
+    if (btnCpp) btnCpp.addEventListener('click', function() { selectLanguage('C++', this); });
+    
+    const btnJs = document.getElementById('btn-javascript');
+    if (btnJs) btnJs.addEventListener('click', function() { selectLanguage('JavaScript', this); });
+    
+    const btnRandom = document.getElementById('btn-random');
+    if (btnRandom) btnRandom.addEventListener('click', function() { selectLanguage('Random', this); });
 
-let currentChallenge = null;
-    let timerInterval = null;
-    let timeLeft = 30;
-    let gameActive = false;
-    let hintUsed = false;
-    
+
     const topics = [
         "variables", "loops", "functions", "conditionals", "arrays", 
         "strings", "math", "recursion", "input/output", "type conversion"

@@ -37,6 +37,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const language = languageSelect.value;
             
             if (!code) {
+                codeInput.classList.remove('shake');
+                void codeInput.offsetWidth; // trigger reflow
+                codeInput.classList.add('shake');
                 alert("Please paste your broken code first!");
                 return;
             }
@@ -75,6 +78,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show results
                 loadingSpinner.classList.add('hidden');
                 resultsCard.classList.remove('hidden');
+
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
 
                 // Increment bugs blasted count
                 let bugsCount = parseInt(localStorage.getItem('bugblaster_bugs_count')) || 0;

@@ -32,6 +32,53 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameActive = false;
     let hintUsed = false;
 
+    // Web Audio API Context
+    let audioCtx = null;
+    let soundEnabled = false;
+    const soundToggle = document.getElementById('sound-toggle');
+    
+    if (soundToggle) {
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.innerText = soundEnabled ? '🔊' : '🔇';
+            
+            if (soundEnabled && !audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        });
+    }
+
+    function playSound(type) {
+        if (!soundEnabled || !audioCtx) return;
+        
+        // Resume context if suspended
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } else if (type === 'wrong') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
     if (startHuntBtn) startHuntBtn.addEventListener('click', startNewChallenge);
     if (nextChallengeBtn) nextChallengeBtn.addEventListener('click', startNewChallenge);
     if (hintBtn) hintBtn.addEventListener('click', useHint);
@@ -102,6 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     endGame(true);
                 } else {
                     lineEl.classList.add('wrong');
+                    playSound('wrong');
                     setTimeout(() => lineEl.classList.remove('wrong'), 500);
                     timeLeft = Math.max(0, timeLeft - 5);
                     showTempMessage("❌ Wrong line! -5s penalty", "error");
@@ -148,6 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (success) {
             let correctGames = parseInt(localStorage.getItem('bugblaster_correct')) || 0;
             localStorage.setItem('bugblaster_correct', correctGames + 1);
+            
+            playSound('correct');
+            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
             
             resultMessage.innerHTML = '<h2>🎉 Correct! +20 XP</h2>';
             resultMessage.className = 'result-message success';

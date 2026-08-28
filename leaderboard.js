@@ -43,16 +43,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Achievements
     if (bugsBlasted >= 1) {
-        document.getElementById('badge-first-bug').classList.remove('locked');
-        document.getElementById('badge-first-bug').querySelector('.lock-overlay').remove();
+        const badge = document.getElementById('badge-first-bug');
+        badge.classList.remove('locked');
+        badge.querySelector('.lock-overlay').remove();
+        badge.title = "Blast your first bug";
     }
     if (g.streak >= 3) {
-        document.getElementById('badge-on-fire').classList.remove('locked');
-        document.getElementById('badge-on-fire').querySelector('.lock-overlay').remove();
+        const badge = document.getElementById('badge-on-fire');
+        badge.classList.remove('locked');
+        badge.querySelector('.lock-overlay').remove();
+        badge.title = "3 day streak";
     }
     if (gamesPlayed >= 5) {
-        document.getElementById('badge-game-on').classList.remove('locked');
-        document.getElementById('badge-game-on').querySelector('.lock-overlay').remove();
+        const badge = document.getElementById('badge-game-on');
+        badge.classList.remove('locked');
+        badge.querySelector('.lock-overlay').remove();
+        badge.title = "Play 5 Bug Hunter games";
     }
 
     // 4. Leaderboard Logic

@@ -22,6 +22,51 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    animation: fadeInPage 0.5s ease-out;
+}
+
+@keyframes fadeInPage {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Scroll to top button */
+.scroll-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    background-color: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.scroll-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.scroll-to-top:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
 .navbar {
@@ -30,6 +75,11 @@ body {
     align-items: center;
     padding: 1.5rem 5%;
     border-bottom: 2px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(88, 204, 2, 0.15); /* Green glow */
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 .logo {
@@ -50,11 +100,32 @@ body {
     color: var(--text-color);
     font-weight: 700;
     font-size: 1.1rem;
-    transition: color 0.2s ease;
+    transition: color 0.3s;
+    position: relative;
+}
+
+.nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: var(--primary-green);
+    transition: width 0.3s ease-out;
 }
 
 .nav-links a:hover {
     color: var(--primary-green);
+}
+
+.nav-links a.active {
+    color: var(--primary-green);
+    font-weight: 900;
+}
+
+.nav-links a.active::after {
+    width: 100%;
 }
 
 main {
@@ -108,9 +179,17 @@ main {
     letter-spacing: 1px;
 }
 
-.cta-button:active {
-    transform: translateY(6px);
-    box-shadow: 0 0 0 var(--primary-green-hover);
+.cta-button:active, .hint-btn:active {
+    transform: scale(0.97);
+}
+
+.cta-button.breathing {
+    animation: breathe 2s infinite ease-in-out;
+}
+
+@keyframes breathe {
+    0%, 100% { transform: scale(1); box-shadow: 0 8px 0 #46A002; }
+    50% { transform: scale(1.05); box-shadow: 0 12px 0 #46A002, 0 0 20px rgba(88,204,2,0.4); }
 }
 
 .cta-button:hover {
@@ -145,19 +224,18 @@ main {
 }
 
 .feature-card {
-    background-color: var(--bg-white);
+    background-color: #FAFAFA;
     border: 2px solid var(--border-color);
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 2rem;
     flex: 1;
     text-align: center;
-    box-shadow: 0 8px 16px var(--shadow-color);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .feature-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 24px var(--shadow-color);
+    transform: translateY(-10px);
+    box-shadow: 0 16px 32px rgba(0,0,0,0.1);
     border-color: var(--primary-yellow);
 }
 
@@ -312,6 +390,17 @@ footer {
     font-size: 1.2rem;
     font-weight: 900;
     color: var(--text-color);
+    transition: transform 0.2s;
+}
+
+.nav-stat.bounce {
+    animation: xpBounce 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes xpBounce {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); color: var(--primary-green); }
+    100% { transform: scale(1); }
 }
 
 .level-badge {
@@ -328,13 +417,14 @@ footer {
 .level-5 { background-color: #FF4B4B; }
 
 .banner {
-    background-color: #FF9600;
+    background-color: #4CAF50;
     color: white;
     text-align: center;
     padding: 0.5rem;
     font-weight: 900;
     font-size: 1.1rem;
     letter-spacing: 1px;
+    transform: scale(1.05);
 }
 
 .progress-container {
@@ -473,7 +563,18 @@ footer {
 .result-section {
     padding: 2rem;
     border-bottom: 1px solid var(--border-color);
-    background-color: #FAFAFA;
+    background-color: #F9F9F9;
+}
+
+.shake {
+    animation: shakeElement 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shakeElement {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
 }
 
 .result-section:last-child {
@@ -744,6 +845,45 @@ pre {
     border: 2px solid #FF4B4B;
 }
 
+/* Staggered Animations for Results Card */
+.result-section {
+    opacity: 0;
+    animation: slideUpFade 0.5s ease forwards;
+}
+.result-section:nth-child(1) { animation-delay: 0.1s; }
+.result-section:nth-child(2) { animation-delay: 0.3s; }
+.result-section:nth-child(3) { animation-delay: 0.5s; }
+.result-section:nth-child(4) { animation-delay: 0.7s; }
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Marquee */
+.marquee-container {
+    overflow: hidden;
+    white-space: nowrap;
+    background: var(--primary-green);
+    color: white;
+    padding: 0.8rem 0;
+    font-weight: 900;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+}
+.marquee-content {
+    display: inline-block;
+    animation: marquee 20s linear infinite;
+}
+.marquee-content:hover {
+    animation-play-state: paused;
+}
+@keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
 @keyframes pulseGreen {
     0% { transform: scale(1); }
     50% { transform: scale(1.02); background-color: rgba(88, 204, 2, 0.4); }
@@ -879,6 +1019,15 @@ pre {
     opacity: 0.6;
 }
 
+.achievement-badge:not(.locked):hover .badge-icon {
+    animation: slowSpin 2s linear infinite;
+}
+
+@keyframes slowSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
 .badge-icon {
     font-size: 3rem;
     margin-bottom: 0.5rem;
@@ -940,8 +1089,24 @@ pre {
     border-bottom: none;
 }
 
+.leaderboard-table tbody tr {
+    animation: slideInRight 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateX(30px);
+}
+.leaderboard-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.leaderboard-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.leaderboard-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.leaderboard-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.leaderboard-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes slideInRight {
+    to { opacity: 1; transform: translateX(0); }
+}
+
 .current-user-row td {
     background-color: #E4F9D1;
     color: var(--primary-green);
+    box-shadow: inset 0 0 10px rgba(88, 204, 2, 0.2);
 }
 

@@ -20,6 +20,7 @@ class Gamification {
         document.addEventListener('DOMContentLoaded', () => {
             this.initUI();
             this.updateUI();
+            this.initScrollToTop();
         });
     }
 
@@ -138,8 +139,17 @@ class Gamification {
         this.showXPPopup(amount);
         this.updateUI();
 
+        // Trigger XP bounce animation
+        const xpEl = document.getElementById('nav-xp');
+        if (xpEl) {
+            xpEl.classList.remove('bounce');
+            void xpEl.offsetWidth; // trigger reflow
+            xpEl.classList.add('bounce');
+        }
+
         if (this.level.levelNum > oldLevelNum) {
             this.showLevelUpModal();
+            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
         }
     }
 
@@ -164,6 +174,26 @@ class Gamification {
         const levelName = document.getElementById('new-level-name');
         if (levelName) levelName.innerText = this.level.name;
         if (modal) modal.classList.remove('hidden');
+    }
+
+    initScrollToTop() {
+        const btn = document.createElement('button');
+        btn.id = 'scroll-to-top';
+        btn.className = 'scroll-to-top';
+        btn.innerHTML = '↑';
+        document.body.appendChild(btn);
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        });
+
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 }
 

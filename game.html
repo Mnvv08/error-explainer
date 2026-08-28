@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugBlaster 🐛 | Bug Hunter 🎮</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BugBlaster 🐛</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="practice.html">Practice</a></li>
+            <li><a href="game.html" class="active">Bug Hunter 🎮</a></li>
+            <li><a href="#">Leaderboard</a></li>
+        </ul>
+        <div class="gamification-nav">
+            <span id="nav-streak" class="nav-stat">🔥 0</span>
+            <span id="nav-xp" class="nav-stat">⚡ 0</span>
+            <span id="nav-level-badge" class="level-badge">Lvl 1: 🐛</span>
+        </div>
+    </nav>
+
+    <div id="fire-banner" class="banner hidden">You're on fire! 🔥</div>
+    
+    <main class="game-main fade-in">
+        <header class="game-header">
+            <h2>Bug Hunter 🎮</h2>
+            <p class="subheading">Can you spot the bug before the timer runs out?</p>
+            <div class="game-stats">
+                <div class="stat-pill">Score: <span id="current-score">0</span></div>
+                <div class="stat-pill">High Score: <span id="high-score">0</span></div>
+                <div class="stat-pill">🔥 <span id="game-streak">0</span></div>
+            </div>
+        </header>
+
+        <div id="start-screen" class="game-center-screen">
+            <button class="cta-button big-play-btn" id="start-hunt-btn">Start Hunt 🎯</button>
+        </div>
+
+        <div id="loading-spinner" class="loading-container hidden">
+            <div class="spinner">🤖</div>
+            <p>Generating a tricky bug... 💥</p>
+        </div>
+
+        <div id="game-arena" class="game-arena hidden">
+            <div class="timer-container">
+                <div class="timer-bar" id="timer-bar"></div>
+            </div>
+            
+            <div class="hint-container">
+                <button id="hint-btn" class="hint-btn">💡 Use Hint (-5 XP)</button>
+                <div id="hint-text" class="hint-text hidden"></div>
+            </div>
+            
+            <div class="code-challenge-box" id="code-box">
+                <!-- Lines will be injected here via JS -->
+            </div>
+            
+            <div id="result-message" class="result-message hidden">
+                <!-- Success or failure message will appear here -->
+            </div>
+            
+            <div id="explanation-card" class="results-card result-section green-border hidden" style="margin-top: 2rem;">
+                <h3>📝 Explanation</h3>
+                <p id="bug-explanation" style="margin-bottom: 1rem;"></p>
+                <h4>✅ Fixed Code</h4>
+                <pre><code id="bug-fixed-code"></code></pre>
+                <button class="cta-button" id="next-challenge-btn" style="margin-top: 2rem; width: 100%;">Next Challenge 🎯</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Built for beginner coders 💚</p>
+    </footer>
+    <script src="gamification.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

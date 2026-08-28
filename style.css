@@ -567,3 +567,191 @@ pre {
         gap: 1rem;
     }
 }
+
+/* Bug Hunter Game Styles */
+.game-main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+    width: 100%;
+    min-height: calc(100vh - 200px);
+}
+
+.game-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.game-header h2 {
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+
+.game-stats {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-pill {
+    background-color: #FAFAFA;
+    border: 2px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-weight: 900;
+    color: var(--text-color);
+}
+
+.game-center-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+}
+
+.big-play-btn {
+    font-size: 2rem;
+    padding: 1.5rem 3rem;
+    border-radius: 24px;
+}
+
+.timer-container {
+    width: 100%;
+    height: 20px;
+    background-color: #E5E5E5;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.timer-bar {
+    height: 100%;
+    width: 100%;
+    background-color: var(--primary-green);
+    border-radius: 10px;
+    transition: width 1s linear, background-color 0.5s;
+}
+
+.hint-container {
+    text-align: right;
+    margin-bottom: 1rem;
+    height: 40px;
+}
+
+.hint-btn {
+    background-color: transparent;
+    color: #FF9600;
+    border: 2px solid #FF9600;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.hint-btn:hover {
+    background-color: #FFF9D2;
+}
+
+.hint-text {
+    font-weight: 700;
+    color: #777;
+    font-size: 1.1rem;
+    background: #FAFAFA;
+    padding: 0.5rem;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.code-challenge-box {
+    background-color: #1E1E1E;
+    border-radius: 16px;
+    padding: 1rem 0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1.1rem;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.code-line {
+    padding: 0.5rem 1rem;
+    display: flex;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.code-line:hover {
+    background-color: #2D2D2D;
+}
+
+.code-line.correct {
+    background-color: rgba(88, 204, 2, 0.2);
+    animation: pulseGreen 1s forwards;
+}
+
+.code-line.wrong {
+    background-color: rgba(255, 75, 75, 0.2);
+    animation: shakeX 0.5s;
+}
+
+.code-line.missed {
+    background-color: rgba(88, 204, 2, 0.2);
+    border: 1px dashed var(--primary-green);
+}
+
+.line-number {
+    color: #666;
+    width: 40px;
+    text-align: right;
+    margin-right: 1.5rem;
+    user-select: none;
+}
+
+.line-content {
+    color: #D4D4D4;
+    white-space: pre;
+}
+
+.result-message {
+    text-align: center;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    animation: fadeIn 0.5s;
+}
+
+.result-message h2 {
+    font-size: 2rem;
+    margin: 0;
+}
+
+.result-message h3 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.result-message.success {
+    background-color: #E4F9D1;
+    color: var(--primary-green);
+    border: 2px solid var(--primary-green);
+}
+
+.result-message.error {
+    background-color: #FFD9D9;
+    color: #FF4B4B;
+    border: 2px solid #FF4B4B;
+}
+
+@keyframes pulseGreen {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); background-color: rgba(88, 204, 2, 0.4); }
+    100% { transform: scale(1); background-color: rgba(88, 204, 2, 0.2); }
+}
+
+@keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}

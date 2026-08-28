@@ -25,6 +25,10 @@ body {
     animation: fadeInPage 0.5s ease-out;
 }
 
+canvas {
+    pointer-events: none !important;
+}
+
 @keyframes fadeInPage {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -745,6 +749,8 @@ pre {
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
 }
 
 .lang-btn:hover {

@@ -18,7 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 2. Activity Chart (Last 7 Days)
     const activityDaysEl = document.getElementById('activity-days');
-    const activityData = JSON.parse(localStorage.getItem('bugblaster_activity')) || [];
+    let activityData = [];
+    try {
+        let rawAct = localStorage.getItem('bugblaster_activity') || '[]';
+        activityData = JSON.parse(rawAct);
+        if (!Array.isArray(activityData)) activityData = [];
+    } catch(e) {
+        console.error(e);
+    }
     
     activityDaysEl.innerHTML = '';
     

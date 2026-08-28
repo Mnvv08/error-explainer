@@ -1,3 +1,4 @@
+try {
 // Gamification System
 
 const LEVELS = [
@@ -10,8 +11,8 @@ const LEVELS = [
 
 class Gamification {
     constructor() {
-        this.xp = parseInt(localStorage.getItem('bugblaster_xp')) || 0;
-        this.streak = parseInt(localStorage.getItem('bugblaster_streak')) || 0;
+        this.xp = parseInt(localStorage.getItem('bugblaster_xp') || '0') || 0;
+        this.streak = parseInt(localStorage.getItem('bugblaster_streak') || '0') || 0;
         this.lastVisit = localStorage.getItem('bugblaster_last_visit');
         this.level = this.calculateLevel(this.xp);
         
@@ -38,7 +39,15 @@ class Gamification {
 
     updateStreak() {
         const today = new Date().toDateString();
-        let activity = JSON.parse(localStorage.getItem('bugblaster_activity')) || [];
+        let activity = [];
+        try {
+            let activityRaw = localStorage.getItem('bugblaster_activity') || '[]';
+            activity = JSON.parse(activityRaw);
+            if (!Array.isArray(activity)) activity = [];
+        } catch(e) {
+            console.error('BugBlaster Gamification Error:', e);
+            activity = [];
+        }
         
         if (!activity.includes(today)) {
             activity.push(today);
@@ -199,3 +208,7 @@ class Gamification {
 
 // Initialize and make globally available
 window.gamification = new Gamification();
+
+} catch (e) {
+    console.error('BugBlaster Error (gamification.js):', e);
+}

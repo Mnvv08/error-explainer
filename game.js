@@ -32,17 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let gameActive = false;
     let hintUsed = false;
     
-    let previousChallenges = [];
     const topics = [
-        "Variables & data types",
-        "Loops (for/while)",
-        "Functions",
-        "Conditionals (if/else)",
-        "Lists/Arrays",
-        "String operations",
-        "Basic math operations"
+        "variables", "loops", "functions", "conditionals", "arrays", 
+        "strings", "math", "recursion", "input/output", "type conversion"
     ];
     const languages = ["Python", "Java", "C"];
+    const twists = [
+        "wrong variable name", "missing bracket", "wrong operator", 
+        "off-by-one error", "wrong function call", "missing return"
+    ];
 
     // Web Audio API Context
     let audioCtx = null;
@@ -254,21 +252,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
     }
 
-    async function fetchChallengeFromClaude() {
+    async function fetchChallengeFromClaude(retries = 3) {
         const randomTopic = topics[Math.floor(Math.random() * topics.length)];
         const randomLanguage = languages[Math.floor(Math.random() * languages.length)];
+        const randomTwist = twists[Math.floor(Math.random() * twists.length)];
 
         const API_KEY = "YOUR_CLAUDE_API_KEY_HERE";
         if (API_KEY === "YOUR_CLAUDE_API_KEY_HERE") {
-            return new Promise((resolve) => setTimeout(() => resolve(getFallbackChallenge(randomLanguage, randomTopic)), 1000));
+            return new Promise((resolve) => setTimeout(() => resolve(getFallbackChallenge(randomLanguage, randomTopic, randomTwist)), 1000));
         }
 
+        let usedChallenges = JSON.parse(localStorage.getItem('bugblaster_used_challenges')) || [];
+        
         let avoidPrompt = "";
-        if (previousChallenges.length > 0) {
-            avoidPrompt = `\nDo NOT generate any of these code snippets again:\n${previousChallenges.join('\n---\n')}`;
+        if (usedChallenges.length > 0) {
+            avoidPrompt = `\nYou MUST NOT generate code that starts with or resembles any of these previously used snippets:\n[${usedChallenges.join(', ')}]\nGenerate something completely new and different.`;
         }
 
-        const prompt = `Generate a beginner-level buggy ${randomLanguage} code snippet (max 10 lines) with exactly ONE bug. The bug must be related to: ${randomTopic}. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }.${avoidPrompt}`;
+        const prompt = `Generate a beginner-level buggy ${randomLanguage} code snippet (max 10 lines) with exactly ONE bug. The bug must be related to: ${randomTopic}, and the bug should specifically involve a ${randomTwist}. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }.${avoidPrompt}`;
 
         const response = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
@@ -299,13 +300,23 @@ document.addEventListener('DOMContentLoaded', () => {
             challenge = JSON.parse(content);
         }
 
-        previousChallenges.push(challenge.buggy_code);
-        if (previousChallenges.length > 5) previousChallenges.shift();
+        const fingerprint = challenge.buggy_code.substring(0, 30);
+        
+        if (usedChallenges.includes(fingerprint) && retries > 0) {
+            console.warn("Duplicate challenge generated, retrying...");
+            return fetchChallengeFromClaude(retries - 1);
+        }
+
+        usedChallenges.push(fingerprint);
+        if (usedChallenges.length > 50) {
+            usedChallenges = usedChallenges.slice(25);
+        }
+        localStorage.setItem('bugblaster_used_challenges', JSON.stringify(usedChallenges));
         
         return challenge;
     }
 
-    function getFallbackChallenge(language, topic) {
+    function getFallbackChallenge(language, topic, twist) {
         // Just providing dynamic mock data so the user sees changes when testing without API key
         const fallbacks = [
             {
@@ -335,9 +346,17 @@ document.addEventListener('DOMContentLoaded', () => {
         ];
         const challenge = fallbacks[Math.floor(Math.random() * fallbacks.length)];
         
-        // Push mock to previousChallenges to test logic
-        previousChallenges.push(challenge.buggy_code);
-        if (previousChallenges.length > 5) previousChallenges.shift();
+        // Push mock to usedChallenges to test logic
+        let usedChallenges = JSON.parse(localStorage.getItem('bugblaster_used_challenges')) || [];
+        const fingerprint = challenge.buggy_code.substring(0, 30);
+        
+        if (!usedChallenges.includes(fingerprint)) {
+            usedChallenges.push(fingerprint);
+            if (usedChallenges.length > 50) {
+                usedChallenges = usedChallenges.slice(25);
+            }
+            localStorage.setItem('bugblaster_used_challenges', JSON.stringify(usedChallenges));
+        }
         
         return challenge;
     }

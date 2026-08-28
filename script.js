@@ -105,14 +105,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // Mock response if no API key is provided
             return new Promise((resolve) => {
                 setTimeout(() => {
+                    const shortCode = code.length > 20 ? code.substring(0, 20) + "..." : code;
                     resolve(JSON.stringify({
-                        "error": "SyntaxError: Missing parentheses in call to 'print'.",
-                        "why": "In Python 3, print is a function and requires parentheses around its arguments.",
-                        "fix": "print('Hello, World!')",
+                        "error": `Mock Error in ${language.toUpperCase()} code: '${shortCode}'`,
+                        "why": `Because this is a mock response! To get real AI analysis for your ${language} code, add your Claude API key in script.js.`,
+                        "fix": `// Fixed ${language} code\n${code}\n// (This is just echoing your code back!)`,
                         "questions": [
-                            "How do you print a string in Python 3?",
-                            "What is the difference between print in Python 2 and Python 3?",
-                            "Can you print multiple arguments separated by commas?"
+                            `How do you handle errors in ${language}?`,
+                            `What is the best way to debug '${shortCode}'?`,
+                            "How do you add an API key to the script?"
                         ]
                     }));
                 }, 2000);

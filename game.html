@@ -4,43 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BugBlaster 🐛 | Bug Hunter 🎮</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- NO EXTERNAL DEPENDENCIES -->
     <style>
-        /* CSS Confetti */
-        .confetti-container {
+        /* Base Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            width: 100%;
+            background-color: #58CC02;
+            color: white;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
             position: fixed;
             top: 0;
             left: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .game-main {
+            margin-top: 100px;
+            text-align: center;
             width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 9999;
-            overflow: hidden;
+            max-width: 800px;
         }
-        .confetti {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background-color: var(--primary-green);
-            opacity: 0;
+
+        .test-button {
+            background-color: #58CC02;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #46A302;
+            margin-top: 50px;
         }
-        @keyframes fall {
-            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-        
-        .code-line { cursor: pointer; }
-        .code-line:hover { background-color: rgba(255, 255, 255, 0.1); }
-        .code-line.correct { background-color: rgba(88, 204, 2, 0.3) !important; }
-        .code-line.wrong { background-color: rgba(255, 75, 75, 0.3) !important; }
-        
-        /* Ensure interactive elements sit above the rest */
-        .interactive-element {
-            position: relative;
-            z-index: 10;
+
+        .test-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #46A302;
         }
     </style>
 </head>
@@ -50,476 +86,18 @@
         <ul class="nav-links">
             <li><a href="index.html">Home</a></li>
             <li><a href="practice.html">Practice</a></li>
-            <li><a href="game.html" class="active">Bug Hunter 🎮</a></li>
+            <li><a href="game.html" style="text-decoration: underline;">Bug Hunter 🎮</a></li>
             <li><a href="leaderboard.html">Leaderboard</a></li>
         </ul>
-        <div class="gamification-nav">
-            <span id="nav-streak" class="nav-stat">🔥 0</span>
-            <span id="nav-xp" class="nav-stat">⚡ 0</span>
-            <span id="nav-level-badge" class="level-badge">Lvl 1: 🐛</span>
+        <div>
+            <!-- Gamification stripped out for test phase -->
         </div>
     </nav>
 
-    <div id="fire-banner" class="banner hidden">You're on fire! 🔥</div>
-    
-    <div style="position: relative; z-index: 50;">
-        <main class="game-main fade-in">
-            <header class="game-header">
-                <h2>Bug Hunter 🎮</h2>
-                <p class="subheading">Can you spot the bug before the timer runs out?</p>
-                <div class="game-stats">
-                    <div class="stat-pill">Score: <span id="current-score">0</span></div>
-                    <div class="stat-pill">High Score: <span id="high-score">0</span></div>
-                    <div class="stat-pill">🔥 <span id="game-streak">0</span></div>
-                </div>
-            </header>
-
-            <div id="start-screen" class="game-center-screen">
-                <div class="language-selector">
-                    <h3>Choose Your Language 🎯</h3>
-                    <div class="lang-btns interactive-element" id="language-selector-btns">
-                        <button class="lang-btn selected interactive-element" data-lang="Python" onclick="selectLanguage('Python', this)">🐍 Python</button>
-                        <button class="lang-btn interactive-element" data-lang="Java" onclick="selectLanguage('Java', this)">☕ Java</button>
-                        <button class="lang-btn interactive-element" data-lang="C" onclick="selectLanguage('C', this)">⚡ C</button>
-                        <button class="lang-btn interactive-element" data-lang="C++" onclick="selectLanguage('C++', this)">🔷 C++</button>
-                        <button class="lang-btn interactive-element" data-lang="JavaScript" onclick="selectLanguage('JavaScript', this)">🌐 JavaScript</button>
-                        <button class="lang-btn interactive-element" data-lang="Random" onclick="selectLanguage('Random', this)">🎲 Random</button>
-                    </div>
-                </div>
-                <button class="cta-button big-play-btn interactive-element" id="start-hunt-btn" onclick="startGame()">Start Hunt 🎯</button>
-            </div>
-
-            <div id="loading-spinner" class="loading-container hidden">
-                <div class="spinner">🤖</div>
-                <p>Generating a tricky bug... 💥</p>
-            </div>
-
-            <div id="game-arena" class="game-arena hidden">
-                <div class="timer-container">
-                    <div class="timer-bar" id="timer-bar"></div>
-                </div>
-                
-                <div class="hint-container">
-                    <button id="hint-btn" class="hint-btn interactive-element" onclick="useHint()">💡 Use Hint (-5 XP)</button>
-                    <div id="hint-text" class="hint-text hidden"></div>
-                </div>
-                
-                <div class="code-challenge-box interactive-element" id="code-box">
-                    <!-- Lines will be injected here via JS -->
-                </div>
-                
-                <div id="result-message" class="result-message hidden">
-                    <!-- Success or failure message will appear here -->
-                </div>
-                
-                <div id="explanation-card" class="results-card result-section green-border hidden" style="margin-top: 2rem;">
-                    <h3>📝 Explanation</h3>
-                    <p id="bug-explanation" style="margin-bottom: 1rem;"></p>
-                    <h4>✅ Fixed Code</h4>
-                    <pre><code id="bug-fixed-code"></code></pre>
-                    <button class="cta-button interactive-element" id="next-challenge-btn" style="margin-top: 2rem; width: 100%;" onclick="startGame()">Next Challenge 🎯</button>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <footer>
-        <p>Built for beginner coders 💚</p>
-    </footer>
-    
-    <script src="gamification.js" defer></script>
-    <script>
-const CHALLENGE_BANK = [
-    {
-        id: 1, language: 'Python', hint: 'Accumulation', correct_line: 4,
-        buggy_code: 'def calculate_total(prices):\n    total = 0\n    for p in prices:\n        total = p\n    return total',
-        explanation: 'The loop overwrites the total instead of adding to it. It should be total += p.',
-        fixed_code: 'def calculate_total(prices):\n    total = 0\n    for p in prices:\n        total += p\n    return total'
-    },
-    {
-        id: 2, language: 'Java', hint: 'Bounds', correct_line: 2,
-        buggy_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i <= numbers.length; i++) {\n    System.out.println(numbers[i]);\n}',
-        explanation: 'Arrays are 0-indexed. The condition should be i < numbers.length to prevent OutOfBounds exception.',
-        fixed_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i < numbers.length; i++) {\n    System.out.println(numbers[i]);\n}'
-    },
-    {
-        id: 3, language: 'C', hint: 'Semicolon', correct_line: 2,
-        buggy_code: 'int main() {\n    int x = 5\n    printf("%d", x);\n    return 0;\n}',
-        explanation: 'Missing semicolon at the end of the variable declaration statement.',
-        fixed_code: 'int main() {\n    int x = 5;\n    printf("%d", x);\n    return 0;\n}'
-    },
-    {
-        id: 4, language: 'Python', hint: 'Syntax', correct_line: 2,
-        buggy_code: 'def check_positive(num):\n    if num > 0\n        return True\n    return False',
-        explanation: 'Missing colon at the end of the if statement.',
-        fixed_code: 'def check_positive(num):\n    if num > 0:\n        return True\n    return False'
-    },
-    {
-        id: 5, language: 'Java', hint: 'Equality', correct_line: 3,
-        buggy_code: 'public boolean checkName(String name) {\n    String expected = "Admin";\n    if (name == expected) {\n        return true;\n    }\n    return false;\n}',
-        explanation: 'In Java, use .equals() to compare String values, not == which compares object references.',
-        fixed_code: 'public boolean checkName(String name) {\n    String expected = "Admin";\n    if (name.equals(expected)) {\n        return true;\n    }\n    return false;\n}'
-    },
-    {
-        id: 6, language: 'C', hint: 'Address', correct_line: 3,
-        buggy_code: 'int main() {\n    int age;\n    scanf("%d", age);\n    return 0;\n}',
-        explanation: 'scanf needs the memory address of the variable, so it should be &age.',
-        fixed_code: 'int main() {\n    int age;\n    scanf("%d", &age);\n    return 0;\n}'
-    },
-    {
-        id: 7, language: 'Python', hint: 'Return', correct_line: 3,
-        buggy_code: 'def add_item(my_list, item):\n    my_list.append(item)\n    my_list = my_list.append(item)\n    return my_list',
-        explanation: 'list.append() modifies the list in place and returns None, so assigning it overwrites the list.',
-        fixed_code: 'def add_item(my_list, item):\n    my_list.append(item)\n    return my_list'
-    },
-    {
-        id: 8, language: 'Java', hint: 'Return', correct_line: 2,
-        buggy_code: 'public int getDouble(int x) {\n    int result = x * 2;\n}',
-        explanation: 'The method declares an int return type but does not return anything.',
-        fixed_code: 'public int getDouble(int x) {\n    int result = x * 2;\n    return result;\n}'
-    },
-    {
-        id: 9, language: 'C', hint: 'Comparison', correct_line: 3,
-        buggy_code: 'int main() {\n    int x = 10;\n    if (x = 5) {\n        printf("X is 5");\n    }\n    return 0;\n}',
-        explanation: 'Used assignment (=) instead of comparison (==) in the if statement.',
-        fixed_code: 'int main() {\n    int x = 10;\n    if (x == 5) {\n        printf("X is 5");\n    }\n    return 0;\n}'
-    },
-    {
-        id: 10, language: 'Python', hint: 'Indentation', correct_line: 3,
-        buggy_code: 'def say_hello():\n    print("Hello")\n   print("World")',
-        explanation: 'Python relies on strict indentation. The second print statement has incorrect spacing.',
-        fixed_code: 'def say_hello():\n    print("Hello")\n    print("World")'
-    },
-    {
-        id: 11, language: 'Java', hint: 'Increment', correct_line: 2,
-        buggy_code: 'public void count() {\n    for (int i = 0; i < 5; ) {\n        System.out.println(i);\n    }\n}',
-        explanation: 'Missing increment statement (i++) in the for loop, creating an infinite loop.',
-        fixed_code: 'public void count() {\n    for (int i = 0; i < 5; i++) {\n        System.out.println(i);\n    }\n}'
-    },
-    {
-        id: 12, language: 'C', hint: 'Format', correct_line: 3,
-        buggy_code: 'int main() {\n    float pi = 3.14;\n    printf("Pi is %d", pi);\n    return 0;\n}',
-        explanation: 'Used %d (integer format) instead of %f (float format) for a float variable.',
-        fixed_code: 'int main() {\n    float pi = 3.14;\n    printf("Pi is %f", pi);\n    return 0;\n}'
-    },
-    {
-        id: 13, language: 'Python', hint: 'Infinite', correct_line: 3,
-        buggy_code: 'def count_down(n):\n    while n > 0:\n        print(n)\n    print("Done!")',
-        explanation: 'The variable n is never decremented inside the loop, creating an infinite loop.',
-        fixed_code: 'def count_down(n):\n    while n > 0:\n        print(n)\n        n -= 1\n    print("Done!")'
-    },
-    {
-        id: 14, language: 'Java', hint: 'Unreachable', correct_line: 4,
-        buggy_code: 'public int multiply(int a, int b) {\n    return a * b;\n    System.out.println("Done");\n}',
-        explanation: 'Code after a return statement is unreachable and causes a compilation error.',
-        fixed_code: 'public int multiply(int a, int b) {\n    System.out.println("Done");\n    return a * b;\n}'
-    },
-    {
-        id: 15, language: 'C', hint: 'Brackets', correct_line: 2,
-        buggy_code: 'int main() {\n    int arr(5);\n    arr[0] = 10;\n    return 0;\n}',
-        explanation: 'Array declaration in C uses square brackets [], not parentheses ().',
-        fixed_code: 'int main() {\n    int arr[5];
-
-function selectLanguage(lang, el) {
-    try {
-        const btns = document.querySelectorAll('.lang-btn');
-        for(let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
-        if (el) el.classList.add('selected');
-        
-        let currentLang = localStorage.getItem('bugblaster_lang_pref') || 'Python';
-        if (currentLang !== lang) {
-            localStorage.setItem('bugblaster_lang_pref', lang);
-            localStorage.setItem('bugblaster_score', '0');
-            const scoreEl = document.getElementById('current-score');
-            if (scoreEl) scoreEl.innerText = '0';
-        }
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-async function startGame() {
-    try {
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('explanation-card').classList.add('hidden');
-        document.getElementById('result-message').classList.add('hidden');
-        document.getElementById('game-arena').classList.add('hidden');
-        document.getElementById('loading-spinner').classList.remove('hidden');
-        
-        if (window.timerInterval) clearInterval(window.timerInterval);
-        
-        try {
-            window.currentChallenge = await fetchChallenge();
-            setupGameUI();
-        } catch(e) {
-            console.error('BugBlaster Error:', e);
-            window.currentChallenge = CHALLENGE_BANK[0];
-            setupGameUI();
-        }
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-async function fetchChallenge() {
-    try {
-        let usedIds = [];
-        try {
-            let idsRaw = localStorage.getItem('bugblaster_used_ids') || '[]';
-            usedIds = JSON.parse(idsRaw);
-            if (!Array.isArray(usedIds)) usedIds = [];
-        } catch(e) {
-            console.error('BugBlaster Error:', e);
-            usedIds = [];
-        }
-        
-        let activeLang = localStorage.getItem('bugblaster_lang_pref') || 'Python';
-        if (activeLang === 'Random') {
-            const langs = ["Python", "Java", "C", "C++", "JavaScript"];
-            activeLang = langs[Math.floor(Math.random() * langs.length)];
-        }
-        
-        const unusedBank = CHALLENGE_BANK.filter(c => !usedIds.includes(c.id) && c.language === activeLang);
-        
-        if (unusedBank.length > 0) {
-            const challenge = unusedBank[Math.floor(Math.random() * unusedBank.length)];
-            usedIds.push(challenge.id);
-            localStorage.setItem('bugblaster_used_ids', JSON.stringify(usedIds));
-            return new Promise(resolve => setTimeout(() => resolve(challenge), 500));
-        }
-        
-        // API Fallback
-        const topics = ["variables", "loops", "functions", "conditionals", "arrays", "strings", "math"];
-        const twists = ["wrong variable name", "missing bracket", "off-by-one error", "missing return"];
-        const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-        const randomTwist = twists[Math.floor(Math.random() * twists.length)];
-        
-        const prompt = `Generate a buggy code challenge ONLY in ${activeLang}. Do not use any other language. Topic: ${randomTopic}. Bug type: ${randomTwist}. Return ONLY JSON: { 'language': '${activeLang}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }`;
-        
-        const response = await fetch("https://api.anthropic.com/v1/messages", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-api-key": "YOUR_CLAUDE_API_KEY_HERE",
-                "anthropic-version": "2023-06-01",
-                "anthropic-dangerous-direct-browser-access": "true"
-            },
-            body: JSON.stringify({
-                model: "claude-3-5-sonnet-20240620",
-                max_tokens: 1024,
-                messages: [{ role: "user", content: prompt }]
-            })
-        });
-        
-        if (!response.ok) throw new Error("API error");
-        const result = await response.json();
-        const content = result.content[0].text;
-        let challenge;
-        const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-            try { challenge = JSON.parse(jsonMatch[1]); } catch(e) { console.error('BugBlaster Error:', e); }
-        } else {
-            try { challenge = JSON.parse(content); } catch(e) { console.error('BugBlaster Error:', e); }
-        }
-        return challenge;
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-        return CHALLENGE_BANK[0];
-    }
-}
-
-function setupGameUI() {
-    try {
-        document.getElementById('loading-spinner').classList.add('hidden');
-        document.getElementById('game-arena').classList.remove('hidden');
-        
-        const hintBtn = document.getElementById('hint-btn');
-        const hintText = document.getElementById('hint-text');
-        hintBtn.classList.remove('hidden');
-        hintText.classList.add('hidden');
-        hintText.innerText = 'Hint: ' + window.currentChallenge.hint;
-        window.hintUsed = false;
-        
-        const codeBox = document.getElementById('code-box');
-        codeBox.innerHTML = '';
-        
-        const lines = window.currentChallenge.buggy_code.split('\n');
-        for(let i = 0; i < lines.length; i++) {
-            const lineContent = lines[i].trim() === '' ? '&nbsp;' : lines[i].replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            const lineHtml = `<div class="code-line interactive-element" id="line-${i+1}" onclick="checkAnswer(${i+1})"><span class="line-number">${i + 1}</span> <span class="line-content">${lineContent}</span></div>`;
-            codeBox.innerHTML += lineHtml;
-        }
-        
-        window.timeLeft = 30;
-        window.gameActive = true;
-        updateTimerBar();
-        
-        window.timerInterval = setInterval(() => {
-            window.timeLeft -= 1;
-            updateTimerBar();
-            if (window.timeLeft <= 0) endGame(false);
-        }, 1000);
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-function updateTimerBar() {
-    try {
-        const timerBar = document.getElementById('timer-bar');
-        const percentage = (window.timeLeft / 30) * 100;
-        timerBar.style.width = percentage + '%';
-        if (window.timeLeft <= 5) timerBar.style.backgroundColor = '#FF4B4B';
-        else if (window.timeLeft <= 15) timerBar.style.backgroundColor = '#FFD700';
-        else timerBar.style.backgroundColor = '#58CC02';
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-function checkAnswer(lineNumber) {
-    try {
-        if (!window.gameActive) return;
-        const lineEl = document.getElementById('line-' + lineNumber);
-        
-        if (lineNumber === window.currentChallenge.correct_line) {
-            if (lineEl) lineEl.classList.add('correct');
-            endGame(true);
-        } else {
-            if (lineEl) lineEl.classList.add('wrong', 'shake');
-            setTimeout(() => {
-                if (lineEl) lineEl.classList.remove('wrong', 'shake');
-            }, 500);
-            window.timeLeft = Math.max(0, window.timeLeft - 5);
-            updateTimerBar();
-            
-            const resultMessage = document.getElementById('result-message');
-            resultMessage.innerHTML = '<h3>❌ Wrong line! -5s penalty</h3>';
-            resultMessage.className = 'result-message error';
-            resultMessage.classList.remove('hidden');
-            setTimeout(() => { if (window.gameActive) resultMessage.classList.add('hidden'); }, 1500);
-            
-            if (window.timeLeft <= 0) endGame(false);
-        }
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-function useHint() {
-    try {
-        if (window.hintUsed || !window.gameActive) return;
-        let xp = parseInt(localStorage.getItem('bugblaster_xp') || '0') || 0;
-        if (xp >= 5) {
-            if (window.gamification) window.gamification.awardXP(-5);
-            window.hintUsed = true;
-            document.getElementById('hint-btn').classList.add('hidden');
-            document.getElementById('hint-text').classList.remove('hidden');
-        } else {
-            alert("Not enough XP for a hint!");
-        }
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-function endGame(success) {
-    try {
-        window.gameActive = false;
-        clearInterval(window.timerInterval);
-        
-        const resultMessage = document.getElementById('result-message');
-        resultMessage.classList.remove('hidden');
-        
-        let score = parseInt(localStorage.getItem('bugblaster_score') || '0') || 0;
-        let highScore = parseInt(localStorage.getItem('bugblaster_highscore') || '0') || 0;
-        
-        if (success) {
-            fireConfetti();
-            resultMessage.innerHTML = '<h2>🎉 Correct! +20 XP</h2>';
-            resultMessage.className = 'result-message success';
-            score += 1;
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('bugblaster_highscore', highScore.toString());
-                const highScoreEl = document.getElementById('high-score');
-                if (highScoreEl) highScoreEl.innerText = highScore;
-            }
-            localStorage.setItem('bugblaster_score', score.toString());
-            const scoreEl = document.getElementById('current-score');
-            if (scoreEl) scoreEl.innerText = score;
-            
-            if (window.gamification) window.gamification.awardXP(20);
-        } else {
-            resultMessage.innerHTML = '<h2>⏰ Time\'s Up!</h2>';
-            resultMessage.className = 'result-message error';
-            score = 0;
-            localStorage.setItem('bugblaster_score', '0');
-            const scoreEl = document.getElementById('current-score');
-            if (scoreEl) scoreEl.innerText = '0';
-            
-            const correctLine = document.getElementById('line-' + window.currentChallenge.correct_line);
-            if (correctLine) correctLine.classList.add('missed');
-        }
-        
-        document.getElementById('bug-explanation').innerText = window.currentChallenge.explanation;
-        document.getElementById('bug-fixed-code').innerText = window.currentChallenge.fixed_code;
-        document.getElementById('explanation-card').classList.remove('hidden');
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-function fireConfetti() {
-    try {
-        const container = document.createElement('div');
-        container.className = 'confetti-container';
-        document.body.appendChild(container);
-        
-        const colors = ['#58CC02', '#1CB0F6', '#FFD700', '#FF4B4B'];
-        for(let i=0; i<50; i++) {
-            const conf = document.createElement('div');
-            conf.className = 'confetti';
-            conf.style.left = Math.random() * 100 + 'vw';
-            conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-            conf.style.animation = `fall ${Math.random() * 2 + 1}s linear forwards`;
-            conf.style.animationDelay = Math.random() * 0.5 + 's';
-            container.appendChild(conf);
-        }
-        
-        setTimeout(() => {
-            if (document.body.contains(container)) {
-                document.body.removeChild(container);
-            }
-        }, 3000);
-    } catch(e) {
-        console.error('BugBlaster Error:', e);
-    }
-}
-
-try {
-    const score = parseInt(localStorage.getItem('bugblaster_score') || '0') || 0;
-    const highScore = parseInt(localStorage.getItem('bugblaster_highscore') || '0') || 0;
-    const streak = parseInt(localStorage.getItem('bugblaster_streak') || '0') || 0;
-    
-    document.getElementById('current-score').innerText = score;
-    document.getElementById('high-score').innerText = highScore;
-    document.getElementById('game-streak').innerText = streak;
-    
-    const selectedLanguage = localStorage.getItem('bugblaster_lang_pref') || 'Python';
-    const btns = document.querySelectorAll('.lang-btn');
-    for(let i = 0; i < btns.length; i++) {
-        if (btns[i].getAttribute('data-lang') === selectedLanguage) {
-            btns[i].classList.add('selected');
-        } else {
-            btns[i].classList.remove('selected');
-        }
-    }
-} catch(e) {
-    console.error('BugBlaster Error:', e);
-}
-</script>
+    <main class="game-main">
+        <h2>System Test Phase 🛠️</h2>
+        <p>Click the button below to verify that inline JavaScript execution is completely unblocked.</p>
+        <button class="test-button" onclick="alert('Working!')">Click Me</button>
+    </main>
 </body>
 </html>

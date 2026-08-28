@@ -106,11 +106,11 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('bugblaster_games_played', gamesPlayed + 1);
         
         try {
-            currentChallenge = await fetchChallengeFromClaude();
+            currentChallenge = await fetchChallenge();
             setupGameUI();
         } catch(e) {
             console.error(e);
-            currentChallenge = getFallbackChallenge();
+            currentChallenge = CHALLENGE_BANK[0];
             setupGameUI();
         }
     }
@@ -252,24 +252,155 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1500);
     }
 
-    async function fetchChallengeFromClaude(retries = 3) {
+    
+    const CHALLENGE_BANK = [
+    {
+        id: 1, language: 'Python', hint: 'Accumulation', correct_line: 4,
+        buggy_code: 'def calculate_total(prices):\n    total = 0\n    for p in prices:\n        total = p\n    return total',
+        explanation: 'The loop overwrites the total instead of adding to it. It should be total += p.',
+        fixed_code: 'def calculate_total(prices):\n    total = 0\n    for p in prices:\n        total += p\n    return total'
+    },
+    {
+        id: 2, language: 'Java', hint: 'Bounds', correct_line: 2,
+        buggy_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i <= numbers.length; i++) {\n    System.out.println(numbers[i]);\n}',
+        explanation: 'Arrays are 0-indexed. The condition should be i < numbers.length to prevent OutOfBounds exception.',
+        fixed_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i < numbers.length; i++) {\n    System.out.println(numbers[i]);\n}'
+    },
+    {
+        id: 3, language: 'C', hint: 'Semicolon', correct_line: 2,
+        buggy_code: 'int main() {\n    int x = 5\n    printf("%d", x);\n    return 0;\n}',
+        explanation: 'Missing semicolon at the end of the variable declaration statement.',
+        fixed_code: 'int main() {\n    int x = 5;\n    printf("%d", x);\n    return 0;\n}'
+    },
+    {
+        id: 4, language: 'Python', hint: 'Syntax', correct_line: 2,
+        buggy_code: 'def check_positive(num):\n    if num > 0\n        return True\n    return False',
+        explanation: 'Missing colon at the end of the if statement.',
+        fixed_code: 'def check_positive(num):\n    if num > 0:\n        return True\n    return False'
+    },
+    {
+        id: 5, language: 'Java', hint: 'Equality', correct_line: 3,
+        buggy_code: 'public boolean checkName(String name) {\n    String expected = "Admin";\n    if (name == expected) {\n        return true;\n    }\n    return false;\n}',
+        explanation: 'In Java, use .equals() to compare String values, not == which compares object references.',
+        fixed_code: 'public boolean checkName(String name) {\n    String expected = "Admin";\n    if (name.equals(expected)) {\n        return true;\n    }\n    return false;\n}'
+    },
+    {
+        id: 6, language: 'C', hint: 'Address', correct_line: 3,
+        buggy_code: 'int main() {\n    int age;\n    scanf("%d", age);\n    return 0;\n}',
+        explanation: 'scanf needs the memory address of the variable, so it should be &age.',
+        fixed_code: 'int main() {\n    int age;\n    scanf("%d", &age);\n    return 0;\n}'
+    },
+    {
+        id: 7, language: 'Python', hint: 'Return', correct_line: 3,
+        buggy_code: 'def add_item(my_list, item):\n    my_list.append(item)\n    my_list = my_list.append(item)\n    return my_list',
+        explanation: 'list.append() modifies the list in place and returns None, so assigning it overwrites the list.',
+        fixed_code: 'def add_item(my_list, item):\n    my_list.append(item)\n    return my_list'
+    },
+    {
+        id: 8, language: 'Java', hint: 'Return', correct_line: 2,
+        buggy_code: 'public int getDouble(int x) {\n    int result = x * 2;\n}',
+        explanation: 'The method declares an int return type but does not return anything.',
+        fixed_code: 'public int getDouble(int x) {\n    int result = x * 2;\n    return result;\n}'
+    },
+    {
+        id: 9, language: 'C', hint: 'Comparison', correct_line: 3,
+        buggy_code: 'int main() {\n    int x = 10;\n    if (x = 5) {\n        printf("X is 5");\n    }\n    return 0;\n}',
+        explanation: 'Used assignment (=) instead of comparison (==) in the if statement.',
+        fixed_code: 'int main() {\n    int x = 10;\n    if (x == 5) {\n        printf("X is 5");\n    }\n    return 0;\n}'
+    },
+    {
+        id: 10, language: 'Python', hint: 'Indentation', correct_line: 3,
+        buggy_code: 'def say_hello():\n    print("Hello")\n   print("World")',
+        explanation: 'Python relies on strict indentation. The second print statement has incorrect spacing.',
+        fixed_code: 'def say_hello():\n    print("Hello")\n    print("World")'
+    },
+    {
+        id: 11, language: 'Java', hint: 'Increment', correct_line: 2,
+        buggy_code: 'public void count() {\n    for (int i = 0; i < 5; ) {\n        System.out.println(i);\n    }\n}',
+        explanation: 'Missing increment statement (i++) in the for loop, creating an infinite loop.',
+        fixed_code: 'public void count() {\n    for (int i = 0; i < 5; i++) {\n        System.out.println(i);\n    }\n}'
+    },
+    {
+        id: 12, language: 'C', hint: 'Format', correct_line: 3,
+        buggy_code: 'int main() {\n    float pi = 3.14;\n    printf("Pi is %d", pi);\n    return 0;\n}',
+        explanation: 'Used %d (integer format) instead of %f (float format) for a float variable.',
+        fixed_code: 'int main() {\n    float pi = 3.14;\n    printf("Pi is %f", pi);\n    return 0;\n}'
+    },
+    {
+        id: 13, language: 'Python', hint: 'Infinite', correct_line: 3,
+        buggy_code: 'def count_down(n):\n    while n > 0:\n        print(n)\n    print("Done!")',
+        explanation: 'The variable n is never decremented inside the loop, creating an infinite loop.',
+        fixed_code: 'def count_down(n):\n    while n > 0:\n        print(n)\n        n -= 1\n    print("Done!")'
+    },
+    {
+        id: 14, language: 'Java', hint: 'Unreachable', correct_line: 4,
+        buggy_code: 'public int multiply(int a, int b) {\n    return a * b;\n    System.out.println("Done");\n}',
+        explanation: 'Code after a return statement is unreachable and causes a compilation error.',
+        fixed_code: 'public int multiply(int a, int b) {\n    System.out.println("Done");\n    return a * b;\n}'
+    },
+    {
+        id: 15, language: 'C', hint: 'Brackets', correct_line: 2,
+        buggy_code: 'int main() {\n    int arr(5);\n    arr[0] = 10;\n    return 0;\n}',
+        explanation: 'Array declaration in C uses square brackets [], not parentheses ().',
+        fixed_code: 'int main() {\n    int arr[5];\n    arr[0] = 10;\n    return 0;\n}'
+    },
+    {
+        id: 16, language: 'Python', hint: 'Quotes', correct_line: 2,
+        buggy_code: 'user = {"name": "Alice", "age": 25}\nprint(user[name])',
+        explanation: 'Dictionary keys need to be strings. It should be user["name"].',
+        fixed_code: 'user = {"name": "Alice", "age": 25}\nprint(user["name"])'
+    },
+    {
+        id: 17, language: 'Java', hint: 'Initialize', correct_line: 3,
+        buggy_code: 'public void printScore() {\n    int score;\n    System.out.println(score);\n}',
+        explanation: 'Local variables must be initialized before they can be used.',
+        fixed_code: 'public void printScore() {\n    int score = 0;\n    System.out.println(score);\n}'
+    },
+    {
+        id: 18, language: 'C', hint: 'Quotes', correct_line: 2,
+        buggy_code: 'int main() {\n    printf(Hello World);\n    return 0;\n}',
+        explanation: 'Strings in C must be enclosed in double quotes.',
+        fixed_code: 'int main() {\n    printf("Hello World");\n    return 0;\n}'
+    },
+    {
+        id: 19, language: 'Python', hint: 'Types', correct_line: 2,
+        buggy_code: 'def show_age(age):\n    print("Age is: " + age)',
+        explanation: 'Cannot concatenate string and integer directly. Must convert age to string using str(age).',
+        fixed_code: 'def show_age(age):\n    print("Age is: " + str(age))'
+    },
+    {
+        id: 20, language: 'Java', hint: 'Signature', correct_line: 1,
+        buggy_code: 'public void main(String[] args) {\n    System.out.println("Started");\n}',
+        explanation: 'The main method must be static to serve as the entry point of a Java application.',
+        fixed_code: 'public static void main(String[] args) {\n    System.out.println("Started");\n}'
+    }
+];
+
+
+    async function fetchChallenge() {
+        let usedIds = JSON.parse(localStorage.getItem('bugblaster_used_ids')) || [];
+        
+        const unusedBank = CHALLENGE_BANK.filter(c => !usedIds.includes(c.id));
+        
+        if (unusedBank.length > 0) {
+            const challenge = unusedBank[Math.floor(Math.random() * unusedBank.length)];
+            usedIds.push(challenge.id);
+            localStorage.setItem('bugblaster_used_ids', JSON.stringify(usedIds));
+            // Simulate network delay
+            return new Promise(resolve => setTimeout(() => resolve(challenge), 500));
+        }
+
         const randomTopic = topics[Math.floor(Math.random() * topics.length)];
         const randomLanguage = languages[Math.floor(Math.random() * languages.length)];
         const randomTwist = twists[Math.floor(Math.random() * twists.length)];
 
         const API_KEY = "YOUR_CLAUDE_API_KEY_HERE";
         if (API_KEY === "YOUR_CLAUDE_API_KEY_HERE") {
-            return new Promise((resolve) => setTimeout(() => resolve(getFallbackChallenge(randomLanguage, randomTopic, randomTwist)), 1000));
+            const challenge = CHALLENGE_BANK[Math.floor(Math.random() * CHALLENGE_BANK.length)];
+            return new Promise((resolve) => setTimeout(() => resolve(challenge), 1000));
         }
 
-        let usedChallenges = JSON.parse(localStorage.getItem('bugblaster_used_challenges')) || [];
-        
-        let avoidPrompt = "";
-        if (usedChallenges.length > 0) {
-            avoidPrompt = `\nYou MUST NOT generate code that starts with or resembles any of these previously used snippets:\n[${usedChallenges.join(', ')}]\nGenerate something completely new and different.`;
-        }
-
-        const prompt = `Generate a beginner-level buggy ${randomLanguage} code snippet (max 10 lines) with exactly ONE bug. The bug must be related to: ${randomTopic}, and the bug should specifically involve a ${randomTwist}. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }.${avoidPrompt}`;
+        const prompt = `Timestamp: ${Date.now()}. Random seed: ${Math.random()}. Generate a UNIQUE buggy code challenge. Topic: ${randomTopic}. Language: ${randomLanguage}. Bug type: ${randomTwist}. This must be completely different from any standard textbook example. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }`;
 
         const response = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
@@ -292,7 +423,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const content = result.content[0].text;
         
         let challenge;
-        // Extract JSON if wrapped in markdown block
         const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch) {
             challenge = JSON.parse(jsonMatch[1]);
@@ -300,64 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
             challenge = JSON.parse(content);
         }
 
-        const fingerprint = challenge.buggy_code.substring(0, 30);
-        
-        if (usedChallenges.includes(fingerprint) && retries > 0) {
-            console.warn("Duplicate challenge generated, retrying...");
-            return fetchChallengeFromClaude(retries - 1);
-        }
-
-        usedChallenges.push(fingerprint);
-        if (usedChallenges.length > 50) {
-            usedChallenges = usedChallenges.slice(25);
-        }
-        localStorage.setItem('bugblaster_used_challenges', JSON.stringify(usedChallenges));
-        
-        return challenge;
-    }
-
-    function getFallbackChallenge(language, topic, twist) {
-        // Just providing dynamic mock data so the user sees changes when testing without API key
-        const fallbacks = [
-            {
-                language: 'Python',
-                buggy_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice", "Bob")',
-                hint: 'Arguments',
-                correct_line: 4,
-                explanation: 'The function `greet` only accepts one argument `name`, but two arguments were provided when calling it.',
-                fixed_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice")'
-            },
-            {
-                language: 'Java',
-                buggy_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i <= 3; i++) {\n    System.out.println(numbers[i]);\n}',
-                hint: 'Bounds',
-                correct_line: 2,
-                explanation: 'Arrays are 0-indexed. The condition should be i < 3 or i < numbers.length to prevent OutOfBounds exception.',
-                fixed_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i < numbers.length; i++) {\n    System.out.println(numbers[i]);\n}'
-            },
-            {
-                language: 'C',
-                buggy_code: 'int main() {\n    int x = 5\n    printf("%d", x);\n    return 0;\n}',
-                hint: 'Semicolon',
-                correct_line: 2,
-                explanation: 'Missing semicolon at the end of the variable declaration statement.',
-                fixed_code: 'int main() {\n    int x = 5;\n    printf("%d", x);\n    return 0;\n}'
-            }
-        ];
-        const challenge = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-        
-        // Push mock to usedChallenges to test logic
-        let usedChallenges = JSON.parse(localStorage.getItem('bugblaster_used_challenges')) || [];
-        const fingerprint = challenge.buggy_code.substring(0, 30);
-        
-        if (!usedChallenges.includes(fingerprint)) {
-            usedChallenges.push(fingerprint);
-            if (usedChallenges.length > 50) {
-                usedChallenges = usedChallenges.slice(25);
-            }
-            localStorage.setItem('bugblaster_used_challenges', JSON.stringify(usedChallenges));
-        }
-        
         return challenge;
     }
 });

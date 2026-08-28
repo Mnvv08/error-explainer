@@ -277,7 +277,7 @@ footer {
 /* Animations */
 .fade-in {
     opacity: 1;
-    animation: fadeIn 0.8s ease-out;
+    animation: fadeIn 0.8s ease-out forwards;
 }
 
 @keyframes fadeIn {
@@ -1176,4 +1176,8 @@ pre {
 .start-hunt-btn {
     position: relative;
     z-index: 100;
+}
+
+@keyframes fall {
+  to { transform: translateY(105vh) rotate(360deg); opacity: 0; }
 }

@@ -79,9 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingSpinner.classList.add('hidden');
                 resultsCard.classList.remove('hidden');
 
-                if (typeof confetti === 'function') {
-                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                }
+                showConfetti();
 
                 // Increment bugs blasted count
                 let bugsCount = parseInt(localStorage.getItem('bugblaster_bugs_count')) || 0;

@@ -243,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('bugblaster_correct', correctGames + 1);
             
             playSound('correct');
-            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            showConfetti();
             
             resultMessage.innerHTML = '<h2>🎉 Correct! +20 XP</h2>';
             resultMessage.className = 'result-message success';

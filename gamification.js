@@ -158,7 +158,7 @@ class Gamification {
 
         if (this.level.levelNum > oldLevelNum) {
             this.showLevelUpModal();
-            if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
+            showConfetti();
         }
     }
 
@@ -211,4 +211,15 @@ window.gamification = new Gamification();
 
 } catch (e) {
     console.error('BugBlaster Error (gamification.js):', e);
+}
+
+
+function showConfetti() {
+  const colors = ['#58CC02','#FFD700','#FF4B4B','#1CB0F6','#FF9600'];
+  for(let i = 0; i < 30; i++) {
+    const dot = document.createElement('div');
+    dot.style.cssText = `position:fixed; width:10px; height:10px; background:${colors[Math.floor(Math.random()*5)]}; left:${Math.random()*100}vw; top:-10px; border-radius:50%; z-index:9999; pointer-events:none; animation:fall ${1+Math.random()*2}s linear forwards`;
+    document.body.appendChild(dot);
+    setTimeout(() => dot.remove(), 3000);
+  }
 }

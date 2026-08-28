@@ -37,6 +37,13 @@ class Gamification {
 
     updateStreak() {
         const today = new Date().toDateString();
+        let activity = JSON.parse(localStorage.getItem('bugblaster_activity')) || [];
+        
+        if (!activity.includes(today)) {
+            activity.push(today);
+            localStorage.setItem('bugblaster_activity', JSON.stringify(activity));
+        }
+
         if (this.lastVisit !== today) {
             if (this.lastVisit) {
                 const lastDate = new Date(this.lastVisit);

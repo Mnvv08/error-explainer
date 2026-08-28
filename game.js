@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         clearInterval(timerInterval);
         
+        let gamesPlayed = parseInt(localStorage.getItem('bugblaster_games_played')) || 0;
+        localStorage.setItem('bugblaster_games_played', gamesPlayed + 1);
+        
         try {
             currentChallenge = await fetchChallengeFromClaude();
             setupGameUI();
@@ -143,6 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
         resultMessage.classList.remove('hidden');
         
         if (success) {
+            let correctGames = parseInt(localStorage.getItem('bugblaster_correct')) || 0;
+            localStorage.setItem('bugblaster_correct', correctGames + 1);
+            
             resultMessage.innerHTML = '<h2>🎉 Correct! +20 XP</h2>';
             resultMessage.className = 'result-message success';
             score += 1;

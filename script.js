@@ -76,6 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingSpinner.classList.add('hidden');
                 resultsCard.classList.remove('hidden');
 
+                // Increment bugs blasted count
+                let bugsCount = parseInt(localStorage.getItem('bugblaster_bugs_count')) || 0;
+                localStorage.setItem('bugblaster_bugs_count', bugsCount + 1);
+
                 // Award XP via Gamification System
                 if (window.gamification) {
                     window.gamification.awardXP(10);

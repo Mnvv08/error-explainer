@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugBlaster 🐛 | Leaderboard 🏆</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="logo">BugBlaster 🐛</div>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="practice.html">Practice</a></li>
+            <li><a href="game.html">Bug Hunter 🎮</a></li>
+            <li><a href="leaderboard.html" class="active">Leaderboard</a></li>
+        </ul>
+        <div class="gamification-nav">
+            <span id="nav-streak" class="nav-stat">🔥 0</span>
+            <span id="nav-xp" class="nav-stat">⚡ 0</span>
+            <span id="nav-level-badge" class="level-badge">Lvl 1: 🐛</span>
+        </div>
+    </nav>
+
+    <main class="leaderboard-main fade-in">
+        <!-- Section 1: My Dashboard -->
+        <section class="dashboard-section">
+            <h2>My Progress 📊</h2>
+            <div class="dashboard-card">
+                <div class="profile-header">
+                    <div class="big-badge" id="dash-big-badge">🐛 Buggy Beginner</div>
+                    <div class="total-xp" id="dash-total-xp">0 XP</div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-streak">0</div>
+                        <div class="stat-label">🔥 Day Streak</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-bugs">0</div>
+                        <div class="stat-label">Bugs Blasted</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-games">0</div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dash-correct">0</div>
+                        <div class="stat-label">Game Correct</div>
+                    </div>
+                </div>
+
+                <div class="activity-chart">
+                    <h3>Weekly Activity</h3>
+                    <div class="days-row" id="activity-days">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="achievements">
+                    <h3>Achievements</h3>
+                    <div class="badges-row">
+                        <div class="achievement-badge locked" id="badge-first-bug" title="Blast your first bug">
+                            <div class="badge-icon">🐛</div>
+                            <div class="badge-name">First Bug</div>
+                            <div class="lock-overlay">🔒</div>
+                        </div>
+                        <div class="achievement-badge locked" id="badge-on-fire" title="3 day streak">
+                            <div class="badge-icon">🔥</div>
+                            <div class="badge-name">On Fire</div>
+                            <div class="lock-overlay">🔒</div>
+                        </div>
+                        <div class="achievement-badge locked" id="badge-game-on" title="Play 5 Bug Hunter games">
+                            <div class="badge-icon">🎮</div>
+                            <div class="badge-name">Game On</div>
+                            <div class="lock-overlay">🔒</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Leaderboard -->
+        <section class="leaderboard-section" style="margin-top: 4rem;">
+            <h2>Leaderboard 🏆</h2>
+            <p class="subheading">Top Bug Blasters this week</p>
+            
+            <div class="table-container">
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Name</th>
+                            <th>Level</th>
+                            <th>XP</th>
+                            <th>Bugs Blasted</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built for beginner coders 💚</p>
+    </footer>
+    <script src="gamification.js"></script>
+    <script src="leaderboard.js"></script>
+</body>
+</html>

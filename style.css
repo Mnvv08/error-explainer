@@ -755,3 +755,193 @@ pre {
     25% { transform: translateX(-5px); }
     75% { transform: translateX(5px); }
 }
+
+/* Leaderboard & Dashboard Styles */
+.leaderboard-main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem 5%;
+    width: 100%;
+}
+
+.dashboard-card {
+    background-color: var(--bg-white);
+    border: 2px solid var(--border-color);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 12px 24px var(--shadow-color);
+}
+
+.profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.big-badge {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--text-color);
+}
+
+.total-xp {
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--primary-green);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-box {
+    background-color: #FAFAFA;
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 2px solid var(--border-color);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--primary-yellow);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.activity-chart {
+    margin-bottom: 2rem;
+}
+
+.activity-chart h3, .achievements h3 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+.days-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.activity-box {
+    flex: 1;
+    height: 40px;
+    background-color: #E5E5E5;
+    border-radius: 8px;
+}
+
+.activity-box.active {
+    background-color: var(--primary-green);
+}
+
+.badges-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.achievement-badge {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #FAFAFA;
+    border: 2px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 20px;
+    width: 120px;
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.achievement-badge:hover {
+    transform: translateY(-5px);
+}
+
+.achievement-badge.locked {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.badge-icon {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.badge-name {
+    font-weight: 900;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+.lock-overlay {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    font-size: 1.5rem;
+    background: white;
+    border-radius: 50%;
+    padding: 2px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Leaderboard Table */
+.table-container {
+    background-color: var(--bg-white);
+    border-radius: 24px;
+    border: 2px solid var(--border-color);
+    overflow: hidden;
+    box-shadow: 0 12px 24px var(--shadow-color);
+}
+
+.leaderboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.leaderboard-table th, .leaderboard-table td {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.leaderboard-table th {
+    background-color: #FAFAFA;
+    font-weight: 900;
+    color: #777;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+.leaderboard-table td {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.leaderboard-table tr:last-child td {
+    border-bottom: none;
+}
+
+.current-user-row td {
+    background-color: #E4F9D1;
+    color: var(--primary-green);
+}
+

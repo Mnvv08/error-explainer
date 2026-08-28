@@ -26,7 +26,40 @@ document.addEventListener('DOMContentLoaded', () => {
         gameStreakEl.innerText = window.gamification.streak;
     }
 
-    let currentChallenge = null;
+    
+    // Language Preference
+    let selectedLang = localStorage.getItem('bugblaster_lang_pref') || 'Python';
+    const langBtns = document.querySelectorAll('.lang-btn');
+    
+    function updateLangUI() {
+        langBtns.forEach(btn => {
+            if (btn.getAttribute('data-lang') === selectedLang) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+    updateLangUI();
+    
+    langBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const newLang = e.target.getAttribute('data-lang');
+            if (newLang !== selectedLang) {
+                selectedLang = newLang;
+                localStorage.setItem('bugblaster_lang_pref', selectedLang);
+                updateLangUI();
+                
+                // Reset score and used ids
+                score = 0;
+                localStorage.setItem('bugblaster_score', 0);
+                currentScoreEl.innerText = score;
+                localStorage.removeItem('bugblaster_used_ids');
+            }
+        });
+    });
+
+let currentChallenge = null;
     let timerInterval = null;
     let timeLeft = 30;
     let gameActive = false;
@@ -36,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         "variables", "loops", "functions", "conditionals", "arrays", 
         "strings", "math", "recursion", "input/output", "type conversion"
     ];
-    const languages = ["Python", "Java", "C"];
+    const languages = ["Python", "Java", "C", "C++", "JavaScript"];
     const twists = [
         "wrong variable name", "missing bracket", "wrong operator", 
         "off-by-one error", "wrong function call", "missing return"
@@ -373,6 +406,32 @@ document.addEventListener('DOMContentLoaded', () => {
         buggy_code: 'public void main(String[] args) {\n    System.out.println("Started");\n}',
         explanation: 'The main method must be static to serve as the entry point of a Java application.',
         fixed_code: 'public static void main(String[] args) {\n    System.out.println("Started");\n}'
+
+    ,
+    {
+        id: 21, language: 'C++', hint: 'Namespace', correct_line: 2,
+        buggy_code: '#include <iostream>\nint main() {\n    cout << "Hello World";\n    return 0;\n}',
+        explanation: 'In C++, standard library functions like cout are in the std namespace. You must use std::cout or declare using namespace std.',
+        fixed_code: '#include <iostream>\nint main() {\n    std::cout << "Hello World";\n    return 0;\n}'
+    },
+    {
+        id: 22, language: 'C++', hint: 'Semicolon', correct_line: 2,
+        buggy_code: 'class Car {\n    int speed\n};',
+        explanation: 'Missing a semicolon after the member variable declaration inside a class.',
+        fixed_code: 'class Car {\n    int speed;\n};'
+    },
+    {
+        id: 23, language: 'JavaScript', hint: 'Equality', correct_line: 2,
+        buggy_code: 'function checkZero(num) {\n    if (num = 0) {\n        return true;\n    }\n    return false;\n}',
+        explanation: 'Using a single equals sign (=) assigns the value instead of comparing it. You should use === for comparison.',
+        fixed_code: 'function checkZero(num) {\n    if (num === 0) {\n        return true;\n    }\n    return false;\n}'
+    },
+    {
+        id: 24, language: 'JavaScript', hint: 'Const', correct_line: 3,
+        buggy_code: 'const count = 1;\nfunction increment() {\n    count++;\n    return count;\n}',
+        explanation: 'Variables declared with const cannot be reassigned or incremented. Use let instead.',
+        fixed_code: 'let count = 1;\nfunction increment() {\n    count++;\n    return count;\n}'
+    }
     }
 ];
 
@@ -380,7 +439,13 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchChallenge() {
         let usedIds = JSON.parse(localStorage.getItem('bugblaster_used_ids')) || [];
         
-        const unusedBank = CHALLENGE_BANK.filter(c => !usedIds.includes(c.id));
+        
+        const activeLang = selectedLang === 'Random' 
+            ? languages[Math.floor(Math.random() * languages.length)] 
+            : selectedLang;
+        
+        const unusedBank = CHALLENGE_BANK.filter(c => !usedIds.includes(c.id) && c.language === activeLang);
+
         
         if (unusedBank.length > 0) {
             const challenge = unusedBank[Math.floor(Math.random() * unusedBank.length)];
@@ -391,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const randomTopic = topics[Math.floor(Math.random() * topics.length)];
-        const randomLanguage = languages[Math.floor(Math.random() * languages.length)];
+        const randomLanguage = selectedLang === 'Random' ? languages[Math.floor(Math.random() * languages.length)] : selectedLang;
         const randomTwist = twists[Math.floor(Math.random() * twists.length)];
 
         const API_KEY = "YOUR_CLAUDE_API_KEY_HERE";
@@ -400,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return new Promise((resolve) => setTimeout(() => resolve(challenge), 1000));
         }
 
-        const prompt = `Timestamp: ${Date.now()}. Random seed: ${Math.random()}. Generate a UNIQUE buggy code challenge. Topic: ${randomTopic}. Language: ${randomLanguage}. Bug type: ${randomTwist}. This must be completely different from any standard textbook example. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }`;
+        const prompt = `Timestamp: ${Date.now()}. Random seed: ${Math.random()}. Generate a UNIQUE buggy code challenge ONLY in ${randomLanguage}. Do not use any other language. Topic: ${randomTopic}. Bug type: ${randomTwist}. This must be completely different from any standard textbook example. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }`;
 
         const response = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",

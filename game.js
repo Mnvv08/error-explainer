@@ -31,6 +31,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let timeLeft = 30;
     let gameActive = false;
     let hintUsed = false;
+    
+    let previousChallenges = [];
+    const topics = [
+        "Variables & data types",
+        "Loops (for/while)",
+        "Functions",
+        "Conditionals (if/else)",
+        "Lists/Arrays",
+        "String operations",
+        "Basic math operations"
+    ];
+    const languages = ["Python", "Java", "C"];
 
     // Web Audio API Context
     let audioCtx = null;
@@ -243,12 +255,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchChallengeFromClaude() {
+        const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+        const randomLanguage = languages[Math.floor(Math.random() * languages.length)];
+
         const API_KEY = "YOUR_CLAUDE_API_KEY_HERE";
         if (API_KEY === "YOUR_CLAUDE_API_KEY_HERE") {
-            return new Promise((resolve) => setTimeout(() => resolve(getFallbackChallenge()), 1000));
+            return new Promise((resolve) => setTimeout(() => resolve(getFallbackChallenge(randomLanguage, randomTopic)), 1000));
         }
 
-        const prompt = "Generate a beginner-level buggy Python/C/Java code snippet (max 10 lines) with exactly ONE bug. Return ONLY JSON: { 'language': 'Python', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }";
+        let avoidPrompt = "";
+        if (previousChallenges.length > 0) {
+            avoidPrompt = `\nDo NOT generate any of these code snippets again:\n${previousChallenges.join('\n---\n')}`;
+        }
+
+        const prompt = `Generate a beginner-level buggy ${randomLanguage} code snippet (max 10 lines) with exactly ONE bug. The bug must be related to: ${randomTopic}. Return ONLY JSON: { 'language': '${randomLanguage}', 'buggy_code': '...', 'hint': 'one word hint', 'correct_line': 3, 'explanation': 'simple explanation', 'fixed_code': '...' }.${avoidPrompt}`;
 
         const response = await fetch("https://api.anthropic.com/v1/messages", {
             method: "POST",
@@ -270,22 +290,55 @@ document.addEventListener('DOMContentLoaded', () => {
         const result = await response.json();
         const content = result.content[0].text;
         
+        let challenge;
         // Extract JSON if wrapped in markdown block
         const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/);
         if (jsonMatch) {
-            return JSON.parse(jsonMatch[1]);
+            challenge = JSON.parse(jsonMatch[1]);
+        } else {
+            challenge = JSON.parse(content);
         }
-        return JSON.parse(content);
+
+        previousChallenges.push(challenge.buggy_code);
+        if (previousChallenges.length > 5) previousChallenges.shift();
+        
+        return challenge;
     }
 
-    function getFallbackChallenge() {
-        return {
-            language: 'Python',
-            buggy_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice", "Bob")',
-            hint: 'Arguments',
-            correct_line: 4,
-            explanation: 'The function `greet` only accepts one argument `name`, but two arguments were provided when calling it.',
-            fixed_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice")'
-        };
+    function getFallbackChallenge(language, topic) {
+        // Just providing dynamic mock data so the user sees changes when testing without API key
+        const fallbacks = [
+            {
+                language: 'Python',
+                buggy_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice", "Bob")',
+                hint: 'Arguments',
+                correct_line: 4,
+                explanation: 'The function `greet` only accepts one argument `name`, but two arguments were provided when calling it.',
+                fixed_code: 'def greet(name):\n    print("Hello " + name)\n    \ngreet("Alice")'
+            },
+            {
+                language: 'Java',
+                buggy_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i <= 3; i++) {\n    System.out.println(numbers[i]);\n}',
+                hint: 'Bounds',
+                correct_line: 2,
+                explanation: 'Arrays are 0-indexed. The condition should be i < 3 or i < numbers.length to prevent OutOfBounds exception.',
+                fixed_code: 'int[] numbers = {1, 2, 3};\nfor(int i = 0; i < numbers.length; i++) {\n    System.out.println(numbers[i]);\n}'
+            },
+            {
+                language: 'C',
+                buggy_code: 'int main() {\n    int x = 5\n    printf("%d", x);\n    return 0;\n}',
+                hint: 'Semicolon',
+                correct_line: 2,
+                explanation: 'Missing semicolon at the end of the variable declaration statement.',
+                fixed_code: 'int main() {\n    int x = 5;\n    printf("%d", x);\n    return 0;\n}'
+            }
+        ];
+        const challenge = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        
+        // Push mock to previousChallenges to test logic
+        previousChallenges.push(challenge.buggy_code);
+        if (previousChallenges.length > 5) previousChallenges.shift();
+        
+        return challenge;
     }
 });

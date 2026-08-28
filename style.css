@@ -301,35 +301,138 @@ footer {
     padding-bottom: 5px;
 }
 
-/* XP Display and Popup */
-.xp-display {
-    font-size: 1.2rem;
-    font-weight: 900;
-    color: var(--primary-yellow);
-    background: #FFF9D2;
-    padding: 0.5rem 1rem;
-    border-radius: 12px;
-    border: 2px solid var(--primary-yellow);
+/* Gamification System Styles */
+.gamification-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
-.xp-popup {
+.nav-stat {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--text-color);
+}
+
+.level-badge {
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: 16px;
+    font-weight: 900;
+    font-size: 1rem;
+}
+.level-1 { background-color: #58CC02; }
+.level-2 { background-color: #1CB0F6; }
+.level-3 { background-color: #CE82FF; }
+.level-4 { background-color: #FF9600; }
+.level-5 { background-color: #FF4B4B; }
+
+.banner {
+    background-color: #FF9600;
+    color: white;
+    text-align: center;
+    padding: 0.5rem;
+    font-weight: 900;
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+}
+
+.progress-container {
+    max-width: 800px;
+    margin: 1.5rem auto 0 auto;
+    padding: 0 1rem;
+}
+.progress-label {
+    font-weight: 900;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+.progress-track {
+    background-color: #E5E5E5;
+    border-radius: 10px;
+    height: 16px;
+    width: 100%;
+    overflow: hidden;
+}
+.progress-fill {
+    background-color: var(--primary-green);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease-out;
+}
+
+/* XP Popup Animation */
+.xp-float-popup {
     position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: var(--primary-yellow);
+    bottom: 40px;
+    right: 40px;
+    background-color: #FFD700;
     color: #333;
     font-weight: 900;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     padding: 1rem 2rem;
     border-radius: 16px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.2);
     z-index: 1000;
-    animation: popupSlide 0.5s ease-out forwards;
+    animation: floatUp 1.5s ease-out forwards;
+}
+.xp-float-popup.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+@keyframes floatUp {
+    0% { transform: translateY(0); opacity: 0; }
+    20% { transform: translateY(-20px); opacity: 1; }
+    80% { transform: translateY(-80px); opacity: 1; }
+    100% { transform: translateY(-100px); opacity: 0; }
 }
 
-@keyframes popupSlide {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
+/* Level Up Modal */
+.modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+}
+.modal-content {
+    background: white;
+    padding: 3rem;
+    border-radius: 24px;
+    text-align: center;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.2);
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.modal-content h2 {
+    font-size: 2.5rem;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+}
+.modal-content p {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 2rem;
+}
+.modal-content strong {
+    color: var(--primary-green);
+    font-size: 1.5rem;
+}
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+.confetti {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: shake 1s infinite;
+}
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
 }
 
 .hidden {

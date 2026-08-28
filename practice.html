@@ -18,8 +18,20 @@
             <li><a href="practice.html" class="active">Practice</a></li>
             <li><a href="#">Leaderboard</a></li>
         </ul>
-        <div class="xp-display">XP: <span id="xp-counter">0</span></div>
+        <div class="gamification-nav">
+            <span id="nav-streak" class="nav-stat">🔥 0</span>
+            <span id="nav-xp" class="nav-stat">⚡ 0</span>
+            <span id="nav-level-badge" class="level-badge">Lvl 1: 🐛</span>
+        </div>
     </nav>
+
+    <div id="fire-banner" class="banner hidden">You're on fire! 🔥</div>
+    <div class="progress-container">
+        <div class="progress-label" id="level-progress-text">🐛 Buggy Beginner</div>
+        <div class="progress-track">
+            <div class="progress-fill" id="level-progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
 
     <main class="practice-main">
         <section class="explainer-section fade-in">
@@ -69,14 +81,10 @@
         </section>
     </main>
 
-    <!-- XP Popup -->
-    <div id="xp-popup" class="xp-popup hidden">
-        🎉 +10 XP earned!
-    </div>
-
     <footer>
         <p>Built for beginner coders 💚</p>
     </footer>
+    <script src="gamification.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

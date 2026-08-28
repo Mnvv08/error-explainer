@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const xpCounter = document.getElementById('xp-counter');
     const blastBtn = document.getElementById('blast-btn');
     const codeInput = document.getElementById('code-input');
     const languageSelect = document.getElementById('language-select');
@@ -11,11 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const resFix = document.getElementById('res-fix');
     const resQuestions = document.getElementById('res-questions');
     const copyBtn = document.getElementById('copy-btn');
-    const xpPopup = document.getElementById('xp-popup');
-
-    // Load XP
-    let xp = parseInt(localStorage.getItem('bugblaster_xp')) || 0;
-    if (xpCounter) xpCounter.innerText = xp;
 
     if (blastBtn) {
         blastBtn.addEventListener('click', async () => {
@@ -62,8 +56,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 loadingSpinner.classList.add('hidden');
                 resultsCard.classList.remove('hidden');
 
-                // Award XP
-                awardXP();
+                // Award XP via Gamification System
+                if (window.gamification) {
+                    window.gamification.awardXP(10);
+                }
             } catch (error) {
                 console.error(error);
                 alert("Oops! Something went wrong while analyzing the code. Check the console for details.");
@@ -78,17 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
             copyBtn.innerText = "Copied!";
             setTimeout(() => { copyBtn.innerText = "Copy Code"; }, 2000);
         });
-    }
-
-    function awardXP() {
-        xp += 10;
-        localStorage.setItem('bugblaster_xp', xp);
-        if (xpCounter) xpCounter.innerText = xp;
-        
-        xpPopup.classList.remove('hidden');
-        setTimeout(() => {
-            xpPopup.classList.add('hidden');
-        }, 3000);
     }
 
     async function analyzeCodeWithClaude(code, language) {

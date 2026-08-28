@@ -11,6 +11,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const resQuestions = document.getElementById('res-questions');
     const copyBtn = document.getElementById('copy-btn');
 
+    function clearResults() {
+        resultsCard.classList.add('hidden');
+        resError.innerText = "";
+        resWhy.innerText = "";
+        resFix.innerText = "";
+        resQuestions.innerHTML = "";
+    }
+
+    if (codeInput) {
+        codeInput.addEventListener('input', () => {
+            if (!codeInput.value.trim()) {
+                clearResults();
+            }
+        });
+    }
+
+    if (languageSelect) {
+        languageSelect.addEventListener('change', clearResults);
+    }
+
     if (blastBtn) {
         blastBtn.addEventListener('click', async () => {
             const code = codeInput.value.trim();
@@ -21,8 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Show loading
-            resultsCard.classList.add('hidden');
+            // Clear old results and show loading
+            clearResults();
             loadingSpinner.classList.remove('hidden');
 
             try {

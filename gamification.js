@@ -17,9 +17,9 @@ try {
     var streakEl = document.getElementById('nav-streak');
     var badgeEl = document.getElementById('nav-level-badge');
     var info = getLevel(xp);
-    if(xpEl) xpEl.textContent = xp;
-    if(streakEl) streakEl.textContent = streak;
-    if(badgeEl) badgeEl.textContent = 'Lvl ' + info.level;
+    if(xpEl) xpEl.textContent = xp + ' XP';
+    if(streakEl) streakEl.textContent = streak + ' day' + (streak !== 1 ? 's' : '');
+    if(badgeEl) badgeEl.textContent = 'Lvl ' + info.level + ': ' + info.name;
   }
 
   function checkStreak() {

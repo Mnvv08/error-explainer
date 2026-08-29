@@ -267,7 +267,7 @@
                 <!-- Populated by JS -->
             </div>
 
-            <button id="next-question-btn" onclick="loadNextDailyQuestion()" style="display:none;background:#FFD700;color:#9a7c00;padding:14px 28px;border-radius:20px;font-weight:900;font-size:1.1rem;border:2px solid #e5c100;cursor:pointer;margin:1.5rem auto 0;box-shadow:0 4px 0 #e5c100;">Next Question &rarr;</button>
+            <button id="next-question-btn" onclick="nextQuestion()" style="display:none;background:#FFD700;color:#9a7c00;padding:14px 28px;border-radius:20px;font-weight:900;font-size:1.1rem;border:2px solid #e5c100;cursor:pointer;margin:1.5rem auto 0;box-shadow:0 4px 0 #e5c100;">Next Question &rarr;</button>
         </div>
 
         <!-- Completed Area (shown when already done today) -->
@@ -329,47 +329,134 @@
 
     var LANG_EMOJIS = { Python:'🐍', Java:'☕', JavaScript:'🌐', C:'⚡', 'C++':'🔷', Go:'🐹', Rust:'🦀', SQL:'🗄️', HTML:'🌐', CSS:'🎨', Ruby:'💎' };
 
+    // ===== DAILY CHALLENGE STATE =====
+    var TOTAL_QUESTIONS = 3;
+    var currentQuestionNum = 0;
+    var questionsForToday = [];
+    var todayKey = new Date().toDateString();
     
+    // Additional state needed for the UI
+    var currentChallenge = null;
+    var dcAnswered = false;
+    var dcTimerInterval = null;
+    var dcTimeLeft = 60;
 
-    function getTodayString() {
-        var d = new Date();
-        return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    // ===== ON PAGE LOAD =====
+    window.onload = function() {
+        var lastCompleted = localStorage.getItem('bugblaster_last_daily');
+        if(lastCompleted === todayKey) {
+            showCompletedCard();
+        } else {
+            currentQuestionNum = 0;
+            prepareQuestionsForToday();
+            showIntroCard();
+        }
     }
 
-    function formatDate() {
-        var d = new Date();
-        var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        return "Today's Challenge — " + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate();
+    // ===== PREPARE 3 QUESTIONS FOR TODAY =====
+    function prepareQuestionsForToday() {
+        var seed = new Date().getFullYear() * 10000 + 
+                   (new Date().getMonth()+1) * 100 + 
+                   new Date().getDate();
+        questionsForToday = [];
+        for(var i = 0; i < TOTAL_QUESTIONS; i++) {
+            var idx = (seed + i * 7) % DAILY_CHALLENGES.length;
+            questionsForToday.push(DAILY_CHALLENGES[idx]);
+        }
     }
 
-    // ── Milestone ───────────────────────────────────────────
-    function getMilestone(streak) {
-        if (streak >= 30) return '🏆 Daily Legend';
-        if (streak >= 14) return '🔥 Fortnight Fighter';
-        if (streak >= 7)  return '⚡ Week Warrior';
-        if (streak >= 3)  return '🌱 Consistent Coder';
-        return null;
+    // ===== SHOW INTRO CARD =====
+    function showIntroCard() {
+        document.getElementById('intro-area').style.display = 'block';
+        document.getElementById('challenge-area').style.display = 'none';
+        document.getElementById('completed-area').style.display = 'none';
+        
+        // Populate intro dynamic text
+        var firstQ = questionsForToday[0];
+        if (document.getElementById('intro-type')) {
+            var tBadge = firstQ.type === 'bug' 
+                ? '<span class="challenge-type-pill type-bug">🐛 Bug Hunt</span>' 
+                : '<span class="challenge-type-pill type-guess">🌐 Guess the Language</span>';
+            var lBadge = firstQ.lang ? ('<span class="lang-badge-dc">' + (LANG_EMOJIS[firstQ.lang]||'') + ' ' + firstQ.lang + '</span>') : '';
+            document.getElementById('intro-type').innerHTML = tBadge + ' ' + lBadge;
+        }
     }
 
-    
-
-    
+    // ===== START BUTTON CLICKED =====
     function startDailyChallenge() {
-        var intro = document.getElementById('intro-area');
-        intro.classList.add('fade-out');
-        setTimeout(function() {
-            intro.style.display = 'none';
-            var challenge = document.getElementById('challenge-area');
-            challenge.style.display = 'block';
-            challenge.style.opacity = '0';
-            startCountdown();
-            setTimeout(function() { challenge.style.opacity = '1'; challenge.style.transition = 'opacity 0.4s ease'; }, 50);
-        }, 400);
+        document.getElementById('intro-area').style.display = 'none';
+        document.getElementById('challenge-area').style.display = 'block';
+        currentQuestionNum = 0;
+        loadQuestion(currentQuestionNum);
     }
 
-    // ── Render Bug Hunt challenge ───────────────────────────
-    function renderBugChallenge(ch) {
+    // ===== LOAD QUESTION =====
+    function loadQuestion(num) {
+        currentChallenge = questionsForToday[num];
+        dcAnswered = false;
+        
+        // Update progress bar
+        var dots = Array(TOTAL_QUESTIONS).fill('○');
+        for(var i=0; i<num; i++) dots[i] = '●';
+        document.getElementById('daily-progress').innerHTML = 
+            'Question ' + (num+1) + ' of ' + TOTAL_QUESTIONS + ' &nbsp;<span style="color:#58CC02;">' + dots.join('') + '</span>';
+            
+        document.getElementById('dc-result').style.display = 'none';
+        document.getElementById('dc-explanation').style.display = 'none';
+        document.getElementById('next-question-btn').style.display = 'none';
+        
+        if(currentChallenge.type === 'bug') {
+            loadBugChallenge(currentChallenge);
+        } else {
+            loadGuessChallenge(currentChallenge);
+        }
+        
+        startCountdown();
+    }
+    
+    function startCountdown() {
+        var timerEl = document.getElementById('challenge-timer');
+        dcTimeLeft = 60;
+        timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
+        timerEl.style.color = '#58CC02';
+        
+        if(dcTimerInterval) clearInterval(dcTimerInterval);
+        
+        dcTimerInterval = setInterval(function() {
+            if (dcAnswered) {
+                clearInterval(dcTimerInterval);
+                return;
+            }
+            dcTimeLeft--;
+            timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
+            
+            if (dcTimeLeft <= 20 && dcTimeLeft > 10) timerEl.style.color = '#FFD700'; // Yellow
+            else if (dcTimeLeft <= 10) timerEl.style.color = '#FF4B4B'; // Red
+            
+            if (dcTimeLeft <= 0) {
+                clearInterval(dcTimerInterval);
+                timeUpDC();
+            }
+        }, 1000);
+    }
+    
+    function timeUpDC() {
+        if (dcAnswered) return;
+        dcAnswered = true;
+        document.querySelectorAll('.dc-opt-btn').forEach(function(b) { b.disabled = true; });
+        if (currentChallenge.type === 'bug') {
+            document.getElementById('dc-line-' + currentChallenge.bug).classList.add('correct');
+        } else {
+            document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
+                var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
+                if (bLang === currentChallenge.answer) b.classList.add('correct');
+            });
+        }
+        showResult(false, true);
+    }
+
+    // ===== RENDER BUG CHALLENGE =====
+    function loadBugChallenge(ch) {
         var card = document.getElementById('challenge-card');
         var emoji = LANG_EMOJIS[ch.lang] || '💻';
         var linesHTML = ch.code.map(function(line, i) {
@@ -378,7 +465,7 @@
                 '<span>' + line.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>' +
                 '</div>';
         }).join('');
-
+        
         card.innerHTML =
             '<div>' +
             '<span class="challenge-type-pill type-bug">🐛 Bug Hunt</span>' +
@@ -387,16 +474,14 @@
             '</div>' +
             '<p style="font-weight:700;color:#555;margin:0.8rem 0 0.3rem;">Click the line with the bug:</p>' +
             '<div class="dc-code-box">'+linesHTML+'</div>' +
-            '<div class="hint-row">💡 Hint: <span>'+ch.hint+'</span></div>' +
-            '<div class="dc-result" id="dc-result"></div>' +
-            '<div class="dc-explanation" id="dc-explanation">' +
-            '<strong>📝 Explanation:</strong> '+ch.explanation +
-            '<div class="dc-fix">✅ Fix: '+ch.fix+'</div>' +
-            '</div>';
+            '<div class="hint-row">💡 Hint: <span>'+ch.hint+'</span></div>';
+            
+        var expl = document.getElementById('dc-explanation');
+        expl.innerHTML = '<strong>📝 Explanation:</strong> '+ch.explanation + '<div class="dc-fix">✅ Fix: '+ch.fix+'</div>';
     }
 
-    // ── Render Guess the Language challenge ─────────────────
-    function renderGuessChallenge(ch) {
+    // ===== RENDER GUESS CHALLENGE =====
+    function loadGuessChallenge(ch) {
         var card = document.getElementById('challenge-card');
         var codeDisplay = ch.code.replace(/\\n/g, '\n');
         var optsHTML = ch.options.map(function(lang) {
@@ -412,112 +497,21 @@
             '<p style="font-weight:700;color:#555;margin:0.8rem 0 0.3rem;">What language is this code written in?</p>' +
             '<div class="dc-code-box" style="font-family:\'Courier New\',monospace;color:#f8f8f2;white-space:pre;line-height:1.7;">'+codeDisplay+'</div>' +
             '<div class="hint-row">💡 Hint: <span>'+ch.hint+'</span></div>' +
-            '<div class="dc-options">'+optsHTML+'</div>' +
-            '<div class="dc-result" id="dc-result"></div>' +
-            '<div class="dc-explanation" id="dc-explanation">' +
-            '<div class="dc-funfact">💡 '+ch.funFact+'</div>' +
-            '</div>';
-    }
-
-    
-    var dcTimerInterval = null;
-    var dcTimeLeft = 60;
-
-    function startCountdown() {
-        var timerEl = document.getElementById('challenge-timer');
-        timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
-        timerEl.style.color = '#58CC02';
-        
-        dcTimerInterval = setInterval(function() {
-            if (dcAnswered) {
-                clearInterval(dcTimerInterval);
-                return;
-            }
-            dcTimeLeft--;
-            timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
+            '<div class="dc-options">'+optsHTML+'</div>';
             
-            if (dcTimeLeft <= 20 && dcTimeLeft > 10) {
-                timerEl.style.color = '#FFD700'; // Yellow
-            } else if (dcTimeLeft <= 10) {
-                timerEl.style.color = '#FF4B4B'; // Red
-            }
-            
-            if (dcTimeLeft <= 0) {
-                clearInterval(dcTimerInterval);
-                timeUpDC();
-            }
-        }, 1000);
+        var expl = document.getElementById('dc-explanation');
+        expl.innerHTML = '<div class="dc-funfact">💡 '+ch.funFact+'</div>';
     }
 
-    function timeUpDC() {
-        if (dcAnswered) return;
-        dcAnswered = true;
-        if(dcTimerInterval) clearInterval(dcTimerInterval);
-        
-        // Disable everything
-        document.querySelectorAll('.dc-opt-btn').forEach(function(b) { b.disabled = true; });
-        
-        var ch = todaysChallenge;
-        if (ch.type === 'bug') {
-            document.getElementById('dc-line-' + ch.bug).classList.add('correct');
-        } else {
-            document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
-                var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
-                if (bLang === ch.answer) b.classList.add('correct');
-            });
-        }
-        
-        showDCResult(false, true); // (correct=false, isTimeUp=true)
-    }
-
-    // ── Answer handlers ─────────────────────────────────────
-    
-    var dailyQuestionsTotal = 3;
-    var dailyQuestionsAnswered = 0;
-    var currentDailyIndex = 0;
-
-    function getDailyChallenge(indexOffset) {
-        var today = new Date();
-        var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate() + (indexOffset || 0);
-        return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
-    }
-
-    function loadNextDailyQuestion() {
-        document.getElementById('next-question-btn').style.display = 'none';
-        document.getElementById('dc-result').style.display = 'none';
-        document.getElementById('dc-explanation').style.display = 'none';
-        
-        todaysChallenge = getDailyChallenge(dailyQuestionsAnswered);
-        dcAnswered = false;
-        dcTimeLeft = 60;
-        
-        var dots = Array(dailyQuestionsTotal).fill('○');
-        for(var i=0; i<=dailyQuestionsAnswered; i++) {
-            dots[i] = '●';
-        }
-        document.getElementById('daily-progress').innerHTML = 'Question ' + (dailyQuestionsAnswered+1) + ' of ' + dailyQuestionsTotal + ' &nbsp;<span style="color:#58CC02;">' + dots.join('') + '</span>';
-        
-        if (todaysChallenge.type === 'bug') {
-            renderBugChallenge(todaysChallenge);
-        } else {
-            renderGuessChallenge(todaysChallenge);
-        }
-        
-        startCountdown();
-    }
-
-    var dcAnswered = false;
-    var todaysChallenge = getDailyChallenge(0);
-
+    // ===== CHECK ANSWERS =====
     function checkDCAnswer(lineNum) {
         if (dcAnswered) return;
-        var ch = todaysChallenge;
+        var ch = currentChallenge;
         var lineEl = document.getElementById('dc-line-' + lineNum);
         if (lineNum === ch.bug) {
             lineEl.classList.add('correct');
             dcAnswered = true;
-        if(dcTimerInterval) clearInterval(dcTimerInterval);
-            showDCResult(true);
+            onAnswerCorrect();
         } else {
             lineEl.classList.add('wrong');
             setTimeout(function() { lineEl.classList.remove('wrong'); }, 800);
@@ -526,72 +520,88 @@
 
     function checkDCGuess(chosen, btn) {
         if (dcAnswered) return;
-        dcAnswered = true;
-        if(dcTimerInterval) clearInterval(dcTimerInterval);
-        var ch = todaysChallenge;
-        document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
-            b.disabled = true;
-            var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
-            if (bLang === ch.answer) b.classList.add('correct');
-        });
-        if (chosen !== ch.answer) btn.classList.add('wrong');
-        showDCResult(chosen === ch.answer);
+        var ch = currentChallenge;
+        if (chosen === ch.answer) {
+            dcAnswered = true;
+            document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
+                b.disabled = true;
+                var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
+                if (bLang === ch.answer) b.classList.add('correct');
+            });
+            onAnswerCorrect();
+        } else {
+            btn.classList.add('wrong');
+            setTimeout(function() { btn.classList.remove('wrong'); }, 800);
+        }
     }
-
-    function showDCResult(correct, isTimeUp) {
+    
+    function showResult(correct, isTimeUp) {
         var resultEl = document.getElementById('dc-result');
-        var explEl   = document.getElementById('dc-explanation');
+        var explEl = document.getElementById('dc-explanation');
         resultEl.className = 'dc-result ' + (correct ? 'success' : 'fail');
-        if(correct) { resultEl.textContent = '🎉 Correct! +50 XP'; } else if (isTimeUp) { resultEl.textContent = '⏳ Time\'s Up! Check the explanation below.'; } else { resultEl.textContent = '❌ Wrong! Check the explanation below.'; }
+        if(correct) { resultEl.textContent = '🎉 Correct! +50 XP'; } 
+        else if (isTimeUp) { resultEl.textContent = '⏳ Time\'s Up! Check the explanation below.'; } 
+        else { resultEl.textContent = '❌ Wrong! Check the explanation below.'; }
         resultEl.style.display = 'block';
         explEl.style.display = 'block';
-
-        if(dcTimerInterval) clearInterval(dcTimerInterval);
-
-        dailyQuestionsAnswered++;
         
-        if (dailyQuestionsAnswered < dailyQuestionsTotal) {
-            // Show Next Question button
+        if (currentQuestionNum + 1 < TOTAL_QUESTIONS) {
             document.getElementById('next-question-btn').style.display = 'block';
+            document.getElementById('next-question-btn').innerHTML = 'Next Question &rarr; (' + (currentQuestionNum+2) + '/' + TOTAL_QUESTIONS + ')';
         } else {
-            // All 3 questions done
-            if (correct) {
-                // We'll just give the completion XP for the whole session once? Or per question?
-                // The prompt logic implies we mark complete at the end.
-            }
-            markDailyComplete();
             setTimeout(function() {
-                document.getElementById('challenge-area').style.display = 'none';
-                document.getElementById('completed-area').style.display = 'block';
-                document.getElementById('completed-msg').textContent = '✅ You crushed today\'s challenge!';
-                updateStreakUI();
-            }, 2000);
+                completeDailyChallenge();
+            }, 1500);
         }
     }
 
-    function markDailyComplete() {
-        var today = new Date().toDateString();
-        localStorage.setItem('bugblaster_last_daily', today);
+    // ===== ON CORRECT ANSWER =====
+    function onAnswerCorrect() {
+        showResult(true, false);
+    }
+
+    // ===== NEXT QUESTION BUTTON =====
+    function nextQuestion() {
+        currentQuestionNum++;
+        loadQuestion(currentQuestionNum);
+    }
+
+    // ===== COMPLETE DAILY CHALLENGE =====
+    function completeDailyChallenge() {
+        localStorage.setItem('bugblaster_last_daily', todayKey);
         
+        var yesterday = new Date(Date.now()-86400000).toDateString();
         var lastDaily = localStorage.getItem('bugblaster_last_daily_prev');
-        var yesterday = new Date(Date.now() - 86400000).toDateString();
         var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak')||'0');
-        
-        if (lastDaily === yesterday) {
-            dailyStreak++;
-        } else {
-            dailyStreak = 1;
-        }
+        dailyStreak = (lastDaily === yesterday) ? dailyStreak + 1 : (lastDaily === todayKey ? dailyStreak : 1);
         
         localStorage.setItem('bugblaster_daily_streak', dailyStreak);
-        localStorage.setItem('bugblaster_last_daily_prev', today);
+        localStorage.setItem('bugblaster_last_daily_prev', todayKey);
         
         var xp = parseInt(localStorage.getItem('bugblaster_xp')||'0');
-        xp += 50 * dailyQuestionsTotal; // e.g. 150 XP for completing all 3
+        xp += 50 * TOTAL_QUESTIONS; // e.g. 150 XP
         localStorage.setItem('bugblaster_xp', xp);
+        
+        showCompletedCard();
     }
 
-    // ── Share ───────────────────────────────────────────────
+    // ===== SHOW COMPLETED CARD =====
+    function showCompletedCard() {
+        document.getElementById('intro-area').style.display = 'none';
+        document.getElementById('challenge-area').style.display = 'none';
+        document.getElementById('completed-area').style.display = 'block';
+        if (document.getElementById('completed-msg')) {
+            document.getElementById('completed-msg').textContent = '✅ You crushed today\'s challenge!';
+        }
+        
+        // Update gamification navbar stats across the site
+        var dailyStreak = localStorage.getItem('bugblaster_daily_streak') || '1';
+        if(document.getElementById('daily-streak-badge')) {
+            document.getElementById('daily-streak-badge').textContent = '🔥 Daily Streak: ' + dailyStreak + ' day' + (dailyStreak !== '1' ? 's' : '');
+        }
+    }
+    
+    // Share result function (keeping this as it's outside the core loop but needed)
     function shareDailyResult() {
         var msg = 'I completed today\'s BugBlaster Daily Challenge! 🐛 Can you solve it? #BugBlaster';
         if (navigator.share) {
@@ -613,55 +623,6 @@
             }
         });
     }
-
-    // ── Update streak UI ────────────────────────────────────
-    function updateStreakUI() {
-        var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
-        document.getElementById('daily-streak-badge').textContent = '🔥 Daily Streak: ' + dailyStreak + ' day' + (dailyStreak !== 1 ? 's' : '');
-        var milestone = getMilestone(dailyStreak);
-        var mEl = document.getElementById('milestone-badge');
-        if (milestone && mEl) { mEl.textContent = milestone; mEl.style.display = 'inline-block'; }
-    }
-
-    // ── Init ────────────────────────────────────────────────
-    document.getElementById('daily-date-badge').textContent = formatDate();
-    if(document.getElementById('intro-date')) document.getElementById('intro-date').textContent = formatDate().replace("Today's Challenge — ", "");
-    updateStreakUI();
-
-    var lastDaily  = localStorage.getItem('bugblaster_last_daily');
-    var todayStr   = getTodayString();
-    
-    // Hide areas by default
-    document.getElementById('challenge-area').style.display = 'none';
-    document.getElementById('completed-area').style.display = 'none';
-    document.getElementById('intro-area').style.display = 'none';
-
-    if (lastDaily === todayStr) {
-        // Already completed today
-        document.getElementById('completed-area').style.display = 'block';
-        var prevResult = localStorage.getItem('bugblaster_daily_result');
-        document.getElementById('completed-msg').textContent = prevResult === 'correct'
-            ? '✅ You already crushed today\'s challenge!'
-            : '💪 You attempted today\'s challenge. Try again tomorrow!';
-    } else {
-        // Show Intro
-        document.getElementById('intro-area').style.display = 'block';
-        var tBadge = todaysChallenge.type === 'bug' 
-            ? '<span class="challenge-type-pill type-bug">🐛 Bug Hunt</span>' 
-            : '<span class="challenge-type-pill type-guess">🌐 Guess the Language</span>';
-        var lBadge = todaysChallenge.lang ? ('<span class="lang-badge-dc">' + (LANG_EMOJIS[todaysChallenge.lang]||'') + ' ' + todaysChallenge.lang + '</span>') : '';
-        if(document.getElementById('intro-type')) document.getElementById('intro-type').innerHTML = tBadge + (lBadge ? ' ' + lBadge : '');
-        
-        var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
-        if(document.getElementById('intro-streak-badge')) document.getElementById('intro-streak-badge').textContent = '🔥 Daily Streak: ' + dailyStreak + ' day' + (dailyStreak !== 1 ? 's' : '');
-
-        // Pre-render today's challenge so it's ready when they click start
-        if (todaysChallenge.type === 'bug') {
-            renderBugChallenge(todaysChallenge);
-        } else {
-            renderGuessChallenge(todaysChallenge);
-        }
-    }
-    </script>
+</script>
 </body>
 </html>

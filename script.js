@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch (error) {
                 console.error(error);
-                alert("Oops! Something went wrong while analyzing the code. Check the console for details.");
+                alert("Oops! Something went wrong: " + error.message);
                 loadingSpinner.classList.add('hidden');
             }
         });
@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 "anthropic-dangerous-direct-browser-access": "true"
             },
             body: JSON.stringify({
-                model: "claude-3-5-sonnet-20240620", 
+                model: "claude-sonnet-4-6",
                 max_tokens: 1024,
                 system: systemPrompt,
                 messages: [
@@ -151,7 +151,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (!response.ok) {
-            throw new Error(`API error: ${response.status}`);
+            const errorText = await response.text();
+            console.error('API Error:', response.status, errorText);
+            throw new Error(`API error ${response.status}: ${errorText}`);
         }
 
         const result = await response.json();

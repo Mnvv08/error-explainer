@@ -88,6 +88,18 @@
                     <ul id="res-questions"></ul>
                 </div>
             </div>
+
+            <!-- Stats card shown briefly on share -->
+            <div id="practice-stats-card" style="display:none; background:white; border:3px solid #58CC02; border-radius:20px; padding:24px; text-align:center; margin-top:16px; font-family:Nunito,sans-serif; box-shadow:0 8px 24px rgba(88,204,2,0.15);">
+                <div style="font-size:1.5rem; font-weight:900; color:#58CC02; margin-bottom:12px;">🐛 BugBlaster</div>
+                <div style="font-size:1.05rem; color:#333; line-height:2; font-weight:700;">
+                    <div>🤖 AI Fixed My Bug!</div>
+                    <div>⚡ XP Earned: <span id="practice-share-xp">0</span></div>
+                    <div>🔥 Streak: <span id="practice-share-streak">0</span> days</div>
+                    <div>🏆 Level: <span id="practice-share-level">Buggy Beginner</span></div>
+                </div>
+            </div>
+            <button id="practice-share-btn" onclick="sharePracticeResult()" style="display:none; padding:12px 30px; background:white; border:2px solid #58CC02; color:#58CC02; border-radius:30px; font-size:16px; font-weight:700; cursor:pointer; margin-top:15px; font-family:Nunito,sans-serif; width:100%;">Share This Fix 🎯</button>
         </section>
     </main>
 
@@ -97,5 +109,89 @@
         <script src="auth.js"></script>
     <script src="gamification.js"></script>
     <script src="script.js"></script>
+
+    <script>
+        function getPracticeLevelName(xpVal) {
+            if(xpVal >= 500) return 'Code Legend';
+            if(xpVal >= 300) return 'Bug Master';
+            if(xpVal >= 150) return 'Debug Ninja';
+            if(xpVal >= 50)  return 'Code Detective';
+            return 'Buggy Beginner';
+        }
+
+        function sharePracticeResult() {
+            var xpVal  = parseInt(localStorage.getItem('bugblaster_xp') || '0');
+            var strVal = parseInt(localStorage.getItem('bugblaster_streak') || '0');
+            var lang   = document.getElementById('language-select') ? document.getElementById('language-select').value : 'code';
+
+            var messages = [
+                'Just fixed a bug in ' + lang + ' using BugBlaster AI! 🐛⚡',
+                'BugBlaster AI just explained my ' + lang + ' bug in plain English — no jargon! 🤖🐛',
+                'Learning to debug ' + lang + ' with BugBlaster — the AI that explains errors like a friend! 🚀',
+            ];
+            var randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+            // Show stats card for 1.5s then share
+            var card = document.getElementById('practice-stats-card');
+            if (card) {
+                var xpEl = document.getElementById('practice-share-xp');
+                var stEl = document.getElementById('practice-share-streak');
+                var lvEl = document.getElementById('practice-share-level');
+                if (xpEl) xpEl.textContent = xpVal;
+                if (stEl) stEl.textContent = strVal;
+                if (lvEl) lvEl.textContent = getPracticeLevelName(xpVal);
+                card.style.display = 'block';
+            }
+            setTimeout(function() {
+                if(navigator.share) {
+                    navigator.share({ title: 'BugBlaster', text: randomMsg, url: window.location.href })
+                        .catch(function() { practFallbackCopy(randomMsg); });
+                } else {
+                    practFallbackCopy(randomMsg);
+                }
+            }, 1500);
+        }
+
+        function practFallbackCopy(text) {
+            var btn = document.getElementById('practice-share-btn');
+            navigator.clipboard.writeText(text).then(function() {
+                if (btn) {
+                    var orig = btn.textContent;
+                    btn.textContent = 'Copied to clipboard! ✅';
+                    btn.style.background = '#58CC02';
+                    btn.style.color = 'white';
+                    setTimeout(function() {
+                        btn.textContent = orig;
+                        btn.style.background = 'white';
+                        btn.style.color = '#58CC02';
+                        var card = document.getElementById('practice-stats-card');
+                        if (card) card.style.display = 'none';
+                    }, 2000);
+                }
+            }).catch(function() {
+                alert(text);
+            });
+        }
+
+        // Show share button after results appear
+        var _origBlastClick = null;
+        document.addEventListener('DOMContentLoaded', function() {
+            var blastBtn = document.getElementById('blast-btn');
+            var resultsCard = document.getElementById('results-card');
+            if (resultsCard) {
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(m) {
+                        if (m.attributeName === 'class') {
+                            var shareBtn = document.getElementById('practice-share-btn');
+                            if (shareBtn) {
+                                shareBtn.style.display = resultsCard.classList.contains('hidden') ? 'none' : 'inline-block';
+                            }
+                        }
+                    });
+                });
+                observer.observe(resultsCard, { attributes: true });
+            }
+        });
+    </script>
 </body>
 </html>

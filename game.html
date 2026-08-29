@@ -455,6 +455,18 @@
                 <h3>📝 Explanation</h3>
                 <p id="explanation-text"></p>
                 <button class="cta-button" style="margin-top: 15px; width: 100%;" onclick="nextChallenge()">Next Challenge 🎯</button>
+                <button id="share-btn" onclick="shareScore()" style="display:none; padding:12px 30px; background:white; border:2px solid #58CC02; color:#58CC02; border-radius:30px; font-size:16px; font-weight:700; cursor:pointer; margin-top:10px; font-family:Nunito,sans-serif; width:100%;">Share My Score 🎯</button>
+            </div>
+
+            <!-- Stats Card (shown briefly on share) -->
+            <div id="stats-share-card" style="display:none; background:white; border:3px solid #58CC02; border-radius:20px; padding:24px; text-align:center; margin-top:14px; font-family:Nunito,sans-serif; box-shadow:0 8px 24px rgba(88,204,2,0.15);">
+                <div style="font-size:1.5rem; font-weight:900; color:#58CC02; margin-bottom:12px;">🐛 BugBlaster Score</div>
+                <div style="font-size:1.05rem; color:#333; line-height:2; font-weight:700;">
+                    <div>🎯 Bugs Found: <span id="share-score-val">0</span></div>
+                    <div>⚡ XP Earned: <span id="share-xp-val">0</span></div>
+                    <div>🔥 Streak: <span id="share-streak-val">0</span> days</div>
+                    <div>🏆 Level: <span id="share-level-val">Buggy Beginner</span></div>
+                </div>
             </div>
         </div>
 
@@ -466,6 +478,7 @@
             <div class="gtl-result" id="gtl-result"></div>
             <div class="gtl-funfact" id="gtl-funfact"></div>
             <button class="cta-button hidden" id="gtl-next-btn" style="width:100%;" onclick="nextGTLChallenge()">Next Challenge 🎯</button>
+            <button id="gtl-share-btn" onclick="shareScore()" style="display:none; padding:12px 30px; background:white; border:2px solid #58CC02; color:#58CC02; border-radius:30px; font-size:16px; font-weight:700; cursor:pointer; margin-top:10px; font-family:Nunito,sans-serif; width:100%;">Share My Score 🎯</button>
         </div>
     </main>
     <button id="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
@@ -680,9 +693,17 @@
             
             document.getElementById('explanation-text').innerText = currentChallenge.explain;
             document.getElementById('explanation-card').classList.remove('hidden');
+
+            // Show share button
+            var shareBtn = document.getElementById('share-btn');
+            if (shareBtn) shareBtn.style.display = 'inline-block';
         }
 
         function nextChallenge() {
+            var shareBtn = document.getElementById('share-btn');
+            if (shareBtn) shareBtn.style.display = 'none';
+            var card = document.getElementById('stats-share-card');
+            if (card) card.style.display = 'none';
             startGame();
         }
     
@@ -836,6 +857,8 @@
             factEl.style.display = 'block';
 
             document.getElementById('gtl-next-btn').classList.remove('hidden');
+            var gShareBtn = document.getElementById('gtl-share-btn');
+            if (gShareBtn) gShareBtn.style.display = 'inline-block';
 
             // Award XP
             if (isCorrect) {
@@ -847,7 +870,80 @@
         }
 
         function nextGTLChallenge() {
+            var b = document.getElementById('gtl-share-btn');
+            if (b) b.style.display = 'none';
+            var card = document.getElementById('stats-share-card');
+            if (card) card.style.display = 'none';
             startGTL();
+        }
+
+
+        // ══════════════════════════════
+        // SHARE SCORE
+        // ══════════════════════════════
+        function getLevelName(xpVal) {
+            if(xpVal >= 500) return 'Code Legend';
+            if(xpVal >= 300) return 'Bug Master';
+            if(xpVal >= 150) return 'Debug Ninja';
+            if(xpVal >= 50)  return 'Code Detective';
+            return 'Buggy Beginner';
+        }
+
+        function showStatsCard(callback) {
+            var card = document.getElementById('stats-share-card');
+            if (card) {
+                var sv = document.getElementById('share-score-val');
+                var xv = document.getElementById('share-xp-val');
+                var stv = document.getElementById('share-streak-val');
+                var lv = document.getElementById('share-level-val');
+                if (sv) sv.textContent = score;
+                if (xv) xv.textContent = xp;
+                if (stv) stv.textContent = streak;
+                if (lv) lv.textContent = getLevelName(xp);
+                card.style.display = 'block';
+                setTimeout(function() { callback(); }, 1500);
+            } else {
+                callback();
+            }
+        }
+
+        function shareScore() {
+            var lang = selectedLang === 'Random' ? 'Random' : selectedLang;
+            var messages = [
+                'I just blasted ' + score + ' bugs on BugBlaster! Can you beat me? 🐛 Try it at bugblaster.dev',
+                'Score: ' + score + ' bugs found in ' + lang + ' mode on BugBlaster! Think you can do better? 🎮🐛',
+                'I am on a ' + streak + ' day streak on BugBlaster and just scored ' + score + '! Challenge accepted? 🔥',
+                'Just earned ' + xp + ' XP on BugBlaster — the debugging game for coders! 🚀 Can you beat my score?',
+            ];
+            var randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+            showStatsCard(function() {
+                if(navigator.share) {
+                    navigator.share({ title: 'BugBlaster Score', text: randomMsg, url: window.location.href })
+                        .catch(function() { fallbackCopy(randomMsg, 'share-btn'); });
+                } else {
+                    fallbackCopy(randomMsg, 'share-btn');
+                }
+            });
+        }
+
+        function fallbackCopy(text, btnId) {
+            var btn = document.getElementById(btnId || 'share-btn');
+            navigator.clipboard.writeText(text).then(function() {
+                if (btn) {
+                    var orig = btn.textContent;
+                    btn.textContent = 'Copied to clipboard! ✅';
+                    btn.style.background = '#58CC02';
+                    btn.style.color = 'white';
+                    setTimeout(function() {
+                        btn.textContent = orig;
+                        btn.style.background = 'white';
+                        btn.style.color = '#58CC02';
+                    }, 2000);
+                }
+            }).catch(function() {
+                alert('Score copied! Share it with your friends 🎯');
+            });
         }
 
         window.onscroll = function() {

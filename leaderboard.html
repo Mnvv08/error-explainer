@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,8 +11,347 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-</head>
+    <style>
+        /* ─── Leaderboard Page Styles ─── */
+        .lb-page { padding: 2rem 5%; max-width: 900px; margin: 0 auto; }
 
+        /* Champion Card */
+        .champion-card {
+            background: linear-gradient(135deg, #fffbe6, #fff4b0);
+            border: 3px solid #FFD700;
+            border-radius: 20px;
+            padding: 1.8rem 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+            box-shadow: 0 8px 24px rgba(255,215,0,0.25);
+        }
+        .champion-label {
+            font-size: 1rem;
+            font-weight: 900;
+            color: #9a7c00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+        .champion-avatar {
+            font-size: 3.5rem;
+            animation: crownBounce 2s ease-in-out infinite;
+        }
+        @keyframes crownBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .champion-name {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #3c3c3c;
+            margin: 0.3rem 0;
+        }
+        .champion-xp {
+            font-size: 1.1rem;
+            color: #58CC02;
+            font-weight: 900;
+        }
+        .champion-level {
+            display: inline-block;
+            background: #FFD700;
+            color: #9a7c00;
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-weight: 900;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        .stats-pill {
+            background: #f7f7f7;
+            border: 2px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #555;
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+        }
+        .stats-pill span { color: #58CC02; font-weight: 900; }
+
+        /* Tabs */
+        .lb-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 1.5rem;
+            border-bottom: 3px solid #e5e5e5;
+            padding-bottom: 0;
+        }
+        .lb-tab {
+            padding: 10px 22px;
+            border: none;
+            background: transparent;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #777;
+            cursor: pointer;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -3px;
+        }
+        .lb-tab:hover { color: #58CC02; background: #f0fff4; }
+        .lb-tab.active {
+            color: #58CC02;
+            font-weight: 900;
+            border-bottom: 3px solid #58CC02;
+            background: #f0fff4;
+        }
+
+        /* Your Rank Card */
+        .your-rank-card {
+            background: linear-gradient(135deg, #f0fff4, #e8ffe8);
+            border: 2px solid #58CC02;
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .your-rank-badge {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #58CC02;
+            min-width: 60px;
+            text-align: center;
+        }
+        .your-rank-info { flex: 1; }
+        .your-rank-info h3 { margin: 0 0 4px; color: #3c3c3c; font-size: 1.1rem; }
+        .your-rank-info p { margin: 0; color: #777; font-size: 0.9rem; font-weight: 700; }
+        .your-rank-progress {
+            width: 100%;
+            height: 10px;
+            background: #e5e5e5;
+            border-radius: 6px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .your-rank-bar {
+            height: 100%;
+            background: #58CC02;
+            border-radius: 6px;
+            transition: width 1s ease;
+        }
+
+        /* Leaderboard Table */
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .leaderboard-table thead tr {
+            background: #f7f7f7;
+        }
+        .leaderboard-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 900;
+            color: #555;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .leaderboard-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: all 0.2s;
+            cursor: default;
+            opacity: 0;
+            animation: rowSlideIn 0.4s ease forwards;
+        }
+        @keyframes rowSlideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .leaderboard-table tbody tr:hover { background: #f7fff7; }
+        .leaderboard-table td { padding: 14px 16px; font-weight: 700; vertical-align: middle; }
+
+        /* Rank Medal */
+        .rank-cell { font-size: 1.4rem; min-width: 50px; }
+        .rank-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            background: #e5e5e5;
+            border-radius: 50%;
+            font-size: 0.85rem;
+            font-weight: 900;
+            color: #777;
+        }
+
+        /* Row tiers */
+        .row-gold { background: linear-gradient(90deg, #fffbe6, #fff); box-shadow: inset 4px 0 0 #FFD700; }
+        .row-silver { background: linear-gradient(90deg, #f5f5f5, #fff); box-shadow: inset 4px 0 0 #C0C0C0; }
+        .row-bronze { background: linear-gradient(90deg, #fdf3e6, #fff); box-shadow: inset 4px 0 0 #CD7F32; }
+        .row-you { background: linear-gradient(90deg, #f0fff4, #fff); box-shadow: inset 4px 0 0 #58CC02; }
+        .you-tag {
+            display: inline-block;
+            background: #58CC02;
+            color: white;
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            margin-left: 6px;
+        }
+
+        /* Level badge */
+        .level-badge-small {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #555;
+            border-radius: 12px;
+            padding: 3px 10px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .level-badge-small.legend { background: #fffbe6; color: #9a7c00; }
+        .level-badge-small.master { background: #ffe8f0; color: #cc0066; }
+        .level-badge-small.ninja { background: #e8f0ff; color: #0044cc; }
+        .level-badge-small.detective { background: #e8fff0; color: #007744; }
+
+        /* Score */
+        .score-cell { font-size: 1.1rem; color: #58CC02; font-weight: 900; }
+
+        /* Activity Ticker */
+        .activity-ticker {
+            margin-top: 1.5rem;
+            background: #f7f7f7;
+            border: 2px solid #e5e5e5;
+            border-radius: 12px;
+            padding: 10px 0;
+            overflow: hidden;
+        }
+        .ticker-inner {
+            display: flex;
+            gap: 40px;
+            white-space: nowrap;
+            animation: tickerScroll 25s linear infinite;
+            font-weight: 700;
+            color: #555;
+            font-size: 0.9rem;
+        }
+        @keyframes tickerScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        .ticker-dot { color: #58CC02; }
+
+        /* My Progress Dashboard */
+        .dashboard-section { margin-bottom: 3rem; }
+        .dashboard-card {
+            background: white;
+            border: 2px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 1.8rem;
+        }
+        .profile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .big-badge {
+            background: linear-gradient(135deg, #58CC02, #46A302);
+            color: white;
+            border-radius: 16px;
+            padding: 12px 24px;
+            font-size: 1.2rem;
+            font-weight: 900;
+        }
+        .total-xp {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #FFD700;
+            text-shadow: 0 2px 0 #e5c100;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-box {
+            background: #f7f7f7;
+            border-radius: 14px;
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.8rem; font-weight: 900; color: #58CC02; }
+        .stat-label { font-size: 0.8rem; font-weight: 700; color: #777; margin-top: 4px; }
+
+        /* Achievements */
+        .achievements h3, .activity-chart h3 { margin: 0 0 1rem; color: #3c3c3c; }
+        .badges-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .achievement-badge {
+            background: white;
+            border: 2px solid #58CC02;
+            border-radius: 14px;
+            padding: 12px 16px;
+            text-align: center;
+            min-width: 80px;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .achievement-badge:hover { transform: translateY(-3px); }
+        .achievement-badge.locked { border-color: #ddd; filter: grayscale(0.6); }
+        .badge-icon { font-size: 1.8rem; }
+        .badge-name { font-size: 0.75rem; font-weight: 700; color: #555; margin-top: 4px; }
+        .lock-overlay {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            font-size: 0.9rem;
+        }
+
+        /* Activity Chart */
+        .activity-chart { margin-bottom: 1.5rem; }
+        .days-row { display: flex; gap: 6px; }
+        .day-dot {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            background: #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #777;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .day-dot.active { background: #58CC02; color: white; }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-bar { flex-direction: column; }
+            .lb-tabs { overflow-x: auto; }
+            .your-rank-card { flex-direction: column; gap: 0.5rem; }
+        }
+    </style>
+</head>
 <body>
     <nav class="navbar">
         <div class="logo">BugBlaster 🐛</div>
@@ -30,14 +368,15 @@
         </div>
         <div id="nav-auth-slot"></div>
     </nav>
-    <!-- Guest banner -->
+
     <div id="guest-banner" style="display:flex;align-items:center;justify-content:center;gap:14px;background:#fffbea;border-bottom:2px solid #FFD700;padding:10px 20px;font-weight:700;color:#9a7c00;font-size:0.95rem;">
         🎮 Playing as guest — progress saved locally only.
         <a href="login.html" style="color:#58CC02;text-decoration:none;font-weight:900;border:2px solid #58CC02;padding:4px 12px;border-radius:8px;">Save permanently →</a>
     </div>
 
-    <main class="leaderboard-main fade-in">
-        <!-- Section 1: My Dashboard -->
+    <main class="lb-page">
+
+        <!-- My Dashboard -->
         <section class="dashboard-section">
             <h2>My Progress 📊</h2>
             <div class="dashboard-card">
@@ -45,86 +384,89 @@
                     <div class="big-badge" id="dash-big-badge">🐛 Buggy Beginner</div>
                     <div class="total-xp" id="dash-total-xp">0 XP</div>
                 </div>
-
                 <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-value" id="dash-streak">0</div>
-                        <div class="stat-label">🔥 Day Streak</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="dash-bugs">0</div>
-                        <div class="stat-label">Bugs Blasted</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="dash-games">0</div>
-                        <div class="stat-label">Games Played</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="dash-correct">0</div>
-                        <div class="stat-label">Game Correct</div>
-                    </div>
+                    <div class="stat-box"><div class="stat-value" id="dash-streak">0</div><div class="stat-label">🔥 Day Streak</div></div>
+                    <div class="stat-box"><div class="stat-value" id="dash-bugs">0</div><div class="stat-label">🐛 Bugs Blasted</div></div>
+                    <div class="stat-box"><div class="stat-value" id="dash-games">0</div><div class="stat-label">🎮 Games Played</div></div>
+                    <div class="stat-box"><div class="stat-value" id="dash-correct">0</div><div class="stat-label">✅ Game Correct</div></div>
                 </div>
-
                 <div class="activity-chart">
                     <h3>Weekly Activity</h3>
-                    <div class="days-row" id="activity-days">
-                        <!-- Populated by JS -->
-                    </div>
+                    <div class="days-row" id="activity-days"></div>
                 </div>
-
                 <div class="achievements">
                     <h3>Achievements</h3>
-                    <div class="badges-row">
-                        <div class="achievement-badge locked" id="badge-first-bug" title="Keep going to unlock!">
-                            <div class="badge-icon">🐛</div>
-                            <div class="badge-name">First Bug</div>
-                            <div class="lock-overlay">🔒</div>
-                        </div>
-                        <div class="achievement-badge locked" id="badge-on-fire" title="Keep going to unlock!">
-                            <div class="badge-icon">🔥</div>
-                            <div class="badge-name">On Fire</div>
-                            <div class="lock-overlay">🔒</div>
-                        </div>
-                        <div class="achievement-badge locked" id="badge-game-on" title="Keep going to unlock!">
-                            <div class="badge-icon">🎮</div>
-                            <div class="badge-name">Game On</div>
-                            <div class="lock-overlay">🔒</div>
-                        </div>
-                    </div>
+                    <div class="badges-row" id="badges-row"></div>
                 </div>
             </div>
         </section>
 
-        <!-- Section 2: Leaderboard -->
-        <section class="leaderboard-section" style="margin-top: 4rem;">
+        <!-- Leaderboard Section -->
+        <section class="leaderboard-section">
             <h2>Leaderboard 🏆</h2>
-            <p class="subheading">Top Bug Blasters this week</p>
 
+            <!-- Champion Card -->
+            <div class="champion-card">
+                <div class="champion-label">👑 This Week's Champion</div>
+                <div class="champion-avatar">🥷</div>
+                <div class="champion-name">CodeNinja99 <span style="font-size:1.2rem;">🇯🇵</span></div>
+                <div class="champion-xp">⚡ 4,850 XP</div>
+                <div class="champion-level">Code Legend</div>
+            </div>
+
+            <!-- Fun Stats Bar -->
+            <div class="stats-bar">
+                <div class="stats-pill">🐛 Bugs Blasted: <span>12,847</span></div>
+                <div class="stats-pill">⚡ Total XP: <span>98,450</span></div>
+                <div class="stats-pill">🔥 Longest Streak: <span>45 days</span></div>
+                <div class="stats-pill">👥 Players: <span>1,247</span></div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="lb-tabs">
+                <button class="lb-tab active" onclick="switchTab('xp', this)">🏆 XP Kings</button>
+                <button class="lb-tab" onclick="switchTab('bug', this)">🎮 Bug Hunters</button>
+                <button class="lb-tab" onclick="switchTab('streak', this)">🔥 Streak Lords</button>
+            </div>
+
+            <!-- Your Rank Card -->
+            <div class="your-rank-card">
+                <div class="your-rank-badge" id="your-rank-num">#?</div>
+                <div class="your-rank-info">
+                    <h3 id="your-rank-title">Your Current Rank</h3>
+                    <p id="your-rank-msg">Earn more XP to climb the ranks!</p>
+                    <div class="your-rank-progress">
+                        <div class="your-rank-bar" id="your-rank-bar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
             <div class="table-container">
                 <table class="leaderboard-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
-                            <th>Name</th>
+                            <th>Player</th>
                             <th>Level</th>
-                            <th>XP</th>
-                            <th>Bugs Blasted</th>
+                            <th id="score-header">⚡ XP</th>
                         </tr>
                     </thead>
-                    <tbody id="leaderboard-body">
-                        <!-- Populated by JS -->
-                    </tbody>
+                    <tbody id="leaderboard-body"></tbody>
                 </table>
+            </div>
+
+            <!-- Activity Ticker -->
+            <div class="activity-ticker">
+                <div class="ticker-inner" id="ticker-inner"></div>
             </div>
         </section>
     </main>
 
-    <footer>
-        <p>Built for beginner coders 💚</p>
-    </footer>
+    <footer><p>Built for beginner coders 💚</p></footer>
+
     <script src="auth.js"></script>
     <script src="gamification.js"></script>
     <script src="leaderboard.js"></script>
 </body>
-
 </html>

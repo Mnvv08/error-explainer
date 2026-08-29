@@ -280,6 +280,9 @@
         }
         #scroll-top:hover { background: #46A302; transform: translateY(-3px); }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <nav class="navbar">
@@ -290,8 +293,13 @@
             <li><a href="game.html" class="active">Bug Hunter 🎮</a></li>
             <li><a href="leaderboard.html">Leaderboard</a></li>
         </ul>
-        <div></div>
+        <div id="nav-auth-slot"></div>
     </nav>
+    <!-- Guest banner -->
+    <div id="guest-banner" style="display:flex;align-items:center;justify-content:center;gap:14px;background:#fffbea;border-bottom:2px solid #FFD700;padding:10px 20px;font-weight:700;color:#9a7c00;font-size:0.95rem;">
+        🎮 Playing as guest — progress saved locally only.
+        <a href="login.html" style="color:#58CC02;text-decoration:none;font-weight:900;border:2px solid #58CC02;padding:4px 12px;border-radius:8px;">Save permanently →</a>
+    </div>
 
     <main class="game-main">
         <header class="game-header">
@@ -551,5 +559,6 @@
             if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
         };
     </script>
+    <script src="auth.js"></script>
 </body>
 </html>

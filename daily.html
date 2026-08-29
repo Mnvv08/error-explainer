@@ -231,9 +231,7 @@
             <div class="milestone-badge" id="milestone-badge" style="display:none;"></div>
         </div>
 
-        <!-- Countdown -->
-        <div class="countdown-card">
-            <div class="countdown-label">⏰ Next challenge in</div>
+        
             <div class="countdown-timer" id="countdown-timer">--:--:--</div>
         </div>
 
@@ -253,13 +251,14 @@
                 <div style="color:#FFD700;font-size:1.1rem;margin-top:12px;">⭐ 50 XP Reward</div>
             </div>
             
-            <div style="color:#777;font-weight:700;margin-bottom:1.5rem;">⏰ Next challenge in <span id="intro-timer" style="color:#58CC02;font-weight:900;"></span></div>
+            <div style="color:#777;font-weight:700;margin-bottom:1.5rem;">⏰ Next challenge resets at midnight</div>
             
             <button class="start-btn" onclick="startDailyChallenge()">START TODAY'S CHALLENGE 🎯</button>
             <p style="margin-top:1.5rem;font-size:0.9rem;color:#777;">Complete daily challenges to build your streak! 🔥</p>
         </div>
         <!-- Challenge Area (shown when NOT completed today) -->
         <div id="challenge-area">
+            <div id="challenge-timer" style="text-align:center;margin-bottom:1rem;font-size:1.8rem;font-weight:900;color:#58CC02;background:#1e1e1e;border-radius:12px;padding:8px;max-width:200px;margin-left:auto;margin-right:auto;">⏱ 60s</div>
             <div class="challenge-card" id="challenge-card">
                 <!-- Populated by JS -->
             </div>
@@ -272,7 +271,7 @@
                 <h2>Daily Challenge Complete!</h2>
                 <div class="xp-earned">+50 XP</div>
                 <p id="completed-msg">You already crushed today's challenge!</p>
-                <p style="color:#58CC02; font-weight:900;">Come back tomorrow for a new challenge! ⏰</p>
+                <p style="color:#58CC02; font-weight:900;">Next daily challenge available tomorrow at midnight ⏰</p>
                 <div class="action-row">
                     <button class="share-daily-btn" onclick="shareDailyResult()">Share My Result 🎯</button>
                 </div>
@@ -351,23 +350,7 @@
         return null;
     }
 
-    // ── Countdown to midnight ───────────────────────────────
-    function updateCountdown() {
-        var now = new Date();
-        var midnight = new Date(now);
-        midnight.setHours(24, 0, 0, 0);
-        var diff = midnight - now;
-        var h = Math.floor(diff / 3600000);
-        var m = Math.floor((diff % 3600000) / 60000);
-        var s = Math.floor((diff % 60000) / 1000);
-        var tStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-        document.getElementById('countdown-timer').textContent = tStr;
-        if(document.getElementById('intro-timer')) document.getElementById('intro-timer').textContent = tStr;
-        //
-            String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    }
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+    
 
     
     function startDailyChallenge() {
@@ -378,6 +361,7 @@
             var challenge = document.getElementById('challenge-area');
             challenge.style.display = 'block';
             challenge.style.opacity = '0';
+            startCountdown();
             setTimeout(function() { challenge.style.opacity = '1'; challenge.style.transition = 'opacity 0.4s ease'; }, 50);
         }, 400);
     }
@@ -433,6 +417,57 @@
             '</div>';
     }
 
+    
+    var dcTimerInterval = null;
+    var dcTimeLeft = 60;
+
+    function startCountdown() {
+        var timerEl = document.getElementById('challenge-timer');
+        timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
+        timerEl.style.color = '#58CC02';
+        
+        dcTimerInterval = setInterval(function() {
+            if (dcAnswered) {
+                clearInterval(dcTimerInterval);
+                return;
+            }
+            dcTimeLeft--;
+            timerEl.textContent = '⏱ ' + dcTimeLeft + 's';
+            
+            if (dcTimeLeft <= 20 && dcTimeLeft > 10) {
+                timerEl.style.color = '#FFD700'; // Yellow
+            } else if (dcTimeLeft <= 10) {
+                timerEl.style.color = '#FF4B4B'; // Red
+            }
+            
+            if (dcTimeLeft <= 0) {
+                clearInterval(dcTimerInterval);
+                timeUpDC();
+            }
+        }, 1000);
+    }
+
+    function timeUpDC() {
+        if (dcAnswered) return;
+        dcAnswered = true;
+        if(dcTimerInterval) clearInterval(dcTimerInterval);
+        
+        // Disable everything
+        document.querySelectorAll('.dc-opt-btn').forEach(function(b) { b.disabled = true; });
+        
+        var ch = todaysChallenge;
+        if (ch.type === 'bug') {
+            document.getElementById('dc-line-' + ch.bug).classList.add('correct');
+        } else {
+            document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
+                var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
+                if (bLang === ch.answer) b.classList.add('correct');
+            });
+        }
+        
+        showDCResult(false, true); // (correct=false, isTimeUp=true)
+    }
+
     // ── Answer handlers ─────────────────────────────────────
     var dcAnswered = false;
     var todaysChallenge = getDailyChallenge();
@@ -444,6 +479,7 @@
         if (lineNum === ch.bug) {
             lineEl.classList.add('correct');
             dcAnswered = true;
+        if(dcTimerInterval) clearInterval(dcTimerInterval);
             showDCResult(true);
         } else {
             lineEl.classList.add('wrong');
@@ -454,6 +490,7 @@
     function checkDCGuess(chosen, btn) {
         if (dcAnswered) return;
         dcAnswered = true;
+        if(dcTimerInterval) clearInterval(dcTimerInterval);
         var ch = todaysChallenge;
         document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
             b.disabled = true;
@@ -464,11 +501,11 @@
         showDCResult(chosen === ch.answer);
     }
 
-    function showDCResult(correct) {
+    function showDCResult(correct, isTimeUp) {
         var resultEl = document.getElementById('dc-result');
         var explEl   = document.getElementById('dc-explanation');
         resultEl.className = 'dc-result ' + (correct ? 'success' : 'fail');
-        resultEl.textContent = correct ? '🎉 Correct! +50 XP' : '❌ Wrong! Check the explanation below.';
+        if(correct) { resultEl.textContent = '🎉 Correct! +50 XP'; } else if (isTimeUp) { resultEl.textContent = '⏳ Time\'s Up! Check the explanation below.'; } else { resultEl.textContent = '❌ Wrong! Check the explanation below.'; }
         resultEl.style.display = 'block';
         explEl.style.display = 'block';
 

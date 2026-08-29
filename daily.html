@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BugBlaster 🐛 | Daily Challenge 📅</title>
+    <meta name="description" content="One special coding challenge every day. Come back tomorrow for a new one!">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    <style>
+        * { font-family: 'Nunito', sans-serif !important; }
+
+        .daily-page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+        /* ── Date Header ─────────────────────────────── */
+        .daily-header { text-align: center; margin-bottom: 2rem; }
+        .daily-header h1 { font-size: 2.4rem; font-weight: 900; color: #3c3c3c; margin: 0 0 .4rem; }
+        .daily-header p  { color: #777; font-size: 1rem; font-weight: 700; margin: 0 0 .8rem; }
+        .daily-date-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #58CC02, #46A302);
+            color: white; border-radius: 20px;
+            padding: 8px 20px; font-weight: 900; font-size: 1rem;
+        }
+
+        /* ── Streak Bar ──────────────────────────────── */
+        .streak-row {
+            display: flex; gap: 12px; align-items: center;
+            justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap;
+        }
+        .daily-streak-badge {
+            background: linear-gradient(135deg, #FF9600, #FF6B00);
+            color: white; border-radius: 20px;
+            padding: 10px 22px; font-weight: 900; font-size: 1.1rem;
+            box-shadow: 0 4px 0 #cc5500;
+        }
+        .milestone-badge {
+            background: #fffbea; border: 2px solid #FFD700;
+            color: #9a7c00; border-radius: 16px;
+            padding: 8px 16px; font-weight: 700; font-size: 0.9rem;
+        }
+
+        /* ── Countdown ───────────────────────────────── */
+        .countdown-card {
+            background: #1e1e1e; color: white;
+            border-radius: 16px; padding: 16px 24px;
+            text-align: center; margin-bottom: 1.5rem;
+        }
+        .countdown-label { font-size: 0.85rem; color: #aaa; font-weight: 700; margin-bottom: 6px; }
+        .countdown-timer { font-size: 2.4rem; font-weight: 900; color: #58CC02; letter-spacing: 4px; }
+
+        /* ── Challenge Card ──────────────────────────── */
+        .challenge-card {
+            background: white; border: 2px solid #e5e5e5;
+            border-radius: 20px; padding: 1.8rem; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .challenge-type-pill {
+            display: inline-block; border-radius: 20px;
+            padding: 5px 14px; font-weight: 900; font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .type-bug  { background: #ffe8e8; color: #cc0000; }
+        .type-guess{ background: #e8f0ff; color: #0044cc; }
+
+        .lang-badge-dc {
+            display: inline-block; background: white;
+            border: 2px solid #58CC02; color: #58CC02;
+            border-radius: 20px; padding: 4px 14px;
+            font-weight: 900; font-size: 0.9rem; margin-left: 8px;
+        }
+
+        .points-badge {
+            float: right; background: #fffbea;
+            border: 2px solid #FFD700; color: #9a7c00;
+            border-radius: 16px; padding: 4px 14px;
+            font-weight: 900; font-size: 0.9rem;
+        }
+
+        /* Bug hunt code block */
+        .dc-code-box {
+            background: #1e1e1e; border-radius: 14px;
+            padding: 16px; margin: 1rem 0;
+        }
+        .dc-code-line {
+            display: flex; align-items: flex-start; gap: 12px;
+            padding: 6px 8px; border-radius: 8px;
+            cursor: pointer; transition: background 0.15s;
+            font-family: 'Courier New', monospace !important;
+            font-size: 0.95rem; color: #f8f8f2;
+        }
+        .dc-code-line:hover { background: rgba(255,255,255,0.08); }
+        .dc-line-num { color: #666; min-width: 24px; user-select: none; }
+        .dc-code-line.correct { background: #1a4a1a !important; }
+        .dc-code-line.wrong   { background: #4a1a1a !important; animation: shake 0.4s; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+        @keyframes greenPulse { 0%{background:#1a4a1a}50%{background:#2d8a2d}100%{background:#1a4a1a} }
+        .dc-code-line.correct { animation: greenPulse 0.5s ease forwards; }
+
+        /* Guess options */
+        .dc-options {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 10px; margin-top: 1rem;
+        }
+        .dc-opt-btn {
+            padding: 13px; border: 2px solid #e5e5e5;
+            background: white; border-radius: 14px;
+            font-size: 1rem; font-weight: 900;
+            cursor: pointer; transition: all 0.2s; color: #333;
+        }
+        .dc-opt-btn:hover:not(:disabled) { border-color: #58CC02; background: #f0fff4; transform: translateY(-2px); }
+        .dc-opt-btn.correct { background: #58CC02; border-color: #46A302; color: white; box-shadow: 0 4px 0 #46A302; }
+        .dc-opt-btn.wrong   { background: #ff4b4b; border-color: #cc0000; color: white; }
+        .dc-opt-btn:disabled { cursor: default; }
+
+        .hint-row { margin-top: .8rem; color: #777; font-size: 0.9rem; font-weight: 700; }
+        .hint-row span { color: #FF9600; }
+
+        /* Result banner */
+        .dc-result {
+            border-radius: 14px; padding: 16px 20px;
+            font-weight: 900; font-size: 1.1rem;
+            margin-top: 1rem; display: none; text-align: center;
+        }
+        .dc-result.success { background: #d7ffb8; color: #46A302; border: 2px solid #58CC02; }
+        .dc-result.fail    { background: #ffcccc; color: #cc0000; border: 2px solid #ff4b4b; }
+
+        .dc-explanation {
+            background: #f7f7f7; border-radius: 12px;
+            padding: 14px; margin-top: .8rem;
+            font-weight: 700; color: #555; display: none;
+        }
+        .dc-fix { background: #1e1e1e; color: #58CC02; padding: 10px 14px; border-radius: 8px; margin-top: 8px; font-family: 'Courier New',monospace !important; font-size: 0.9rem; }
+        .dc-funfact { background: #fffbea; border: 2px solid #FFD700; border-radius: 12px; padding: 12px; margin-top: 8px; color: #9a7c00; font-weight: 700; }
+
+        /* Completed state */
+        .completed-card {
+            background: linear-gradient(135deg, #f0fff4, #e8ffe8);
+            border: 3px solid #58CC02; border-radius: 20px;
+            padding: 2rem; text-align: center;
+            box-shadow: 0 8px 24px rgba(88,204,2,0.15);
+        }
+        .completed-icon { font-size: 4rem; margin-bottom: .5rem; animation: pop 0.5s ease; }
+        @keyframes pop { 0%{transform:scale(0)} 80%{transform:scale(1.2)} 100%{transform:scale(1)} }
+        .completed-card h2 { font-size: 1.8rem; font-weight: 900; color: #46A302; margin: 0 0 .5rem; }
+        .completed-card p  { color: #555; font-weight: 700; margin: .3rem 0; }
+        .xp-earned { font-size: 1.5rem; font-weight: 900; color: #FFD700; text-shadow: 0 2px 0 #e5c100; }
+
+        /* Action buttons */
+        .action-row { display: flex; gap: 10px; margin-top: 1.2rem; flex-wrap: wrap; justify-content: center; }
+        .share-daily-btn {
+            padding: 12px 28px; background: white;
+            border: 2px solid #58CC02; color: #58CC02;
+            border-radius: 30px; font-size: 1rem; font-weight: 900;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .share-daily-btn:hover { background: #58CC02; color: white; }
+
+        @media (max-width: 500px) {
+            .dc-options { grid-template-columns: 1fr; }
+            .streak-row { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo" style="text-decoration:none; color:#58CC02; font-weight:900; font-size:24px;">BugBlaster 🐛</a>
+        <ul class="nav-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="practice.html">Practice</a></li>
+            <li><a href="game.html">Bug Hunter 🎮</a></li>
+            <li><a href="daily.html" class="active">Daily 📅</a></li>
+            <li><a href="leaderboard.html">Leaderboard</a></li>
+        </ul>
+        <div class="gamification-nav">
+            <span class="nav-stat">🔥 <span id="nav-streak">0 days</span></span>
+            <span class="nav-stat">⚡ <span id="nav-xp">0 XP</span></span>
+            <span id="nav-level-badge" class="level-badge">Lvl 1: Buggy Beginner</span>
+        </div>
+        <div id="nav-auth-slot"></div>
+    </nav>
+
+    <div id="guest-banner" style="display:flex;align-items:center;justify-content:center;gap:14px;background:#fffbea;border-bottom:2px solid #FFD700;padding:10px 20px;font-weight:700;color:#9a7c00;font-size:0.95rem;">
+        🎮 Playing as guest — progress saved locally only.
+        <a href="login.html" style="color:#58CC02;text-decoration:none;font-weight:900;border:2px solid #58CC02;padding:4px 12px;border-radius:8px;">Save permanently →</a>
+    </div>
+
+    <main class="daily-page">
+        <!-- Header -->
+        <div class="daily-header">
+            <h1>Daily Challenge 📅</h1>
+            <p>One challenge per day — same for everyone. Come back tomorrow for a new one!</p>
+            <div class="daily-date-badge" id="daily-date-badge">Today's Challenge</div>
+        </div>
+
+        <!-- Streak Row -->
+        <div class="streak-row">
+            <div class="daily-streak-badge" id="daily-streak-badge">🔥 Daily Streak: 0 days</div>
+            <div class="milestone-badge" id="milestone-badge" style="display:none;"></div>
+        </div>
+
+        <!-- Countdown -->
+        <div class="countdown-card">
+            <div class="countdown-label">⏰ Next challenge in</div>
+            <div class="countdown-timer" id="countdown-timer">--:--:--</div>
+        </div>
+
+        <!-- Challenge Area (shown when NOT completed today) -->
+        <div id="challenge-area">
+            <div class="challenge-card" id="challenge-card">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Completed Area (shown when already done today) -->
+        <div id="completed-area" style="display:none;">
+            <div class="completed-card">
+                <div class="completed-icon">🎉</div>
+                <h2>Daily Challenge Complete!</h2>
+                <div class="xp-earned">+50 XP</div>
+                <p id="completed-msg">You already crushed today's challenge!</p>
+                <p style="color:#58CC02; font-weight:900;">Come back tomorrow for a new challenge! ⏰</p>
+                <div class="action-row">
+                    <button class="share-daily-btn" onclick="shareDailyResult()">Share My Result 🎯</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer><p>Built for beginner coders 💚</p></footer>
+
+    <script src="auth.js"></script>
+    <script src="gamification.js"></script>
+    <script>
+    // ══════════════════════════════════════════════════════
+    // DAILY CHALLENGE ENGINE
+    // ══════════════════════════════════════════════════════
+
+    var DAILY_CHALLENGES = [
+        { type:'bug',   lang:'Python',     code:['def multiply(a, b):','    return a + b','print(multiply(3,4))'], bug:2, hint:'operator', explanation:'Should be * not + to multiply numbers.', fix:'    return a * b', points:50 },
+        { type:'bug',   lang:'Java',       code:['int[] nums = {1,2,3,4,5};','System.out.println(nums[5]);'], bug:2, hint:'array index', explanation:'Array index 5 is out of bounds. Max index is 4.', fix:'System.out.println(nums[4]);', points:50 },
+        { type:'guess', code:'fmt.Println("Hello World")', answer:'Go', options:['Go','Python','Java','C++'], hint:'fmt package', funFact:'Go was created by Google in 2009!', points:50 },
+        { type:'bug',   lang:'JavaScript', code:['let nums = [1,2,3];','nums.push(4)','console.log(nums.lenght);'], bug:3, hint:'spelling', explanation:'"lenght" is misspelled — should be "length".', fix:'console.log(nums.length);', points:50 },
+        { type:'bug',   lang:'Python',     code:['for i in range(10)','    print(i)'], bug:1, hint:'colon', explanation:'Missing colon at the end of the for statement.', fix:'for i in range(10):', points:50 },
+        { type:'guess', code:'SELECT * FROM users WHERE id = 1;', answer:'SQL', options:['SQL','Python','Java','C'], hint:'database query', funFact:'SQL was developed at IBM in the 1970s!', points:50 },
+        { type:'bug',   lang:'C',          code:['int x = 10;','int y = 0;','printf("%d", x/y);'], bug:3, hint:'division by zero', explanation:'Division by zero causes a crash!', fix:'if(y != 0) printf("%d", x/y);', points:50 },
+        { type:'bug',   lang:'Python',     code:['name = "BugBlaster"','print(name[20])'], bug:2, hint:'index out of range', explanation:'String only has 10 chars. Index 20 is out of range.', fix:'print(name[0])', points:50 },
+        { type:'guess', code:'let mut x = 5;\nx += 1;', answer:'Rust', options:['Rust','C++','Go','Swift'], hint:'mut keyword', funFact:'Rust has been the most loved language 8 years in a row!', points:50 },
+        { type:'bug',   lang:'Java',       code:['String name = null;','System.out.println(name.length());'], bug:2, hint:'null reference', explanation:'Cannot call methods on null — NullPointerException!', fix:'if(name != null) System.out.println(name.length());', points:50 },
+        { type:'bug',   lang:'C++',        code:['int* p = nullptr;','cout << *p;'], bug:2, hint:'null pointer', explanation:'Dereferencing a null pointer causes undefined behaviour!', fix:'if(p) cout << *p;', points:50 },
+        { type:'guess', code:'<h1>Hello World</h1>', answer:'HTML', options:['HTML','CSS','JavaScript','XML'], hint:'angle bracket tags', funFact:'HTML was invented by Tim Berners-Lee in 1991!', points:50 },
+        { type:'bug',   lang:'Python',     code:['x = 5','y = "hello"','print(x + y)'], bug:3, hint:'type error', explanation:'Cannot add int and string in Python without conversion.', fix:'print(str(x) + y)', points:50 },
+        { type:'bug',   lang:'JavaScript', code:['function greet() {','    return','    "Hello World"','}'], bug:2, hint:'return semicolon', explanation:'JavaScript inserts a semicolon after return — use parentheses.', fix:'    return "Hello World"', points:50 },
+        { type:'guess', code:'body {\n  background-color: red;\n  font-size: 16px;\n}', answer:'CSS', options:['CSS','HTML','JavaScript','Sass'], hint:'curly brace styling', funFact:'CSS was first proposed by Håkon Wium Lie in 1994!', points:50 },
+        { type:'bug',   lang:'Java',       code:['int x = 5;','if(x = 10) {','    System.out.println("Ten!");','}'], bug:2, hint:'assignment vs comparison', explanation:'= assigns a value; == compares. Use ==.', fix:'if(x == 10) {', points:50 },
+        { type:'bug',   lang:'C',          code:['char name[5];','strcpy(name, "BugBlaster");','printf("%s", name);'], bug:2, hint:'buffer overflow', explanation:'Array only holds 5 chars but "BugBlaster" needs 11!', fix:'char name[12];', points:50 },
+        { type:'guess', code:'def greet():\n    print("Hello")\ngreet()', answer:'Python', options:['Python','Ruby','JavaScript','Go'], hint:'def keyword', funFact:'Python was named after Monty Python, not the snake!', points:50 },
+        { type:'bug',   lang:'Python',     code:['def factorial(n):','    if n == 0:','        return 1','    return n * factorial(n)'], bug:4, hint:'infinite recursion', explanation:'Should call factorial(n-1) not factorial(n)!', fix:'    return n * factorial(n-1)', points:50 },
+        { type:'bug',   lang:'JavaScript', code:['const PI = 3.14159;','PI = 3;'], bug:2, hint:'const', explanation:'const variables cannot be reassigned. Use let instead.', fix:'let PI = 3.14159;', points:50 },
+        { type:'guess', code:'package main\nimport "fmt"\nfunc main() {\n    fmt.Println("Go!")\n}', answer:'Go', options:['Go','Java','C','Rust'], hint:'package main', funFact:'Go compiles faster than almost any other language!', points:50 },
+        { type:'bug',   lang:'C++',        code:['vector<int> v;','cout << v[0];'], bug:2, hint:'empty vector', explanation:'Accessing index 0 of an empty vector is undefined behaviour!', fix:'if(!v.empty()) cout << v[0];', points:50 },
+        { type:'guess', code:'fn main() {\n    println!("Hello, Rust!");\n}', answer:'Rust', options:['Rust','C','Go','Swift'], hint:'println! macro', funFact:'Rust was originally designed by Graydon Hoare at Mozilla!', points:50 },
+        { type:'bug',   lang:'Python',     code:['nums = [1, 2, 3]','for i in range(4):','    print(nums[i])'], bug:2, hint:'range too large', explanation:'List has 3 items (index 0-2). range(4) goes to index 3 which is out of range.', fix:'for i in range(3):', points:50 },
+        { type:'bug',   lang:'Java',       code:['int result = 7 / 2;','System.out.println(result);'], bug:1, hint:'integer division', explanation:'7/2 in Java gives 3 (integer). Use 7.0/2 for 3.5.', fix:'double result = 7.0 / 2;', points:50 },
+        { type:'guess', code:'SELECT name, age FROM students ORDER BY age DESC;', answer:'SQL', options:['SQL','MongoDB','Python','PHP'], hint:'SELECT keyword', funFact:'SQL stands for Structured Query Language!', points:50 },
+        { type:'bug',   lang:'JavaScript', code:['let x = 10;','let y = "5";','console.log(x - y);','console.log(x + y);'], bug:4, hint:'type coercion', explanation:'+ concatenates strings in JS. x+"5" is "105", not 15.', fix:'console.log(x + parseInt(y));', points:50 },
+        { type:'guess', code:'#[derive(Debug)]\nstruct Point { x: i32, y: i32 }', answer:'Rust', options:['Rust','C++','Go','Java'], hint:'derive attribute', funFact:'Rust structs can derive common traits automatically!', points:50 },
+        { type:'bug',   lang:'Python',     code:['import math','result = math.sqrt(-1)','print(result)'], bug:2, hint:'domain error', explanation:'Square root of negative numbers requires the cmath module!', fix:'import cmath\nresult = cmath.sqrt(-1)', points:50 },
+        { type:'bug',   lang:'C',          code:['int main() {','    printf("Hello");','    return 1;','}'], bug:3, hint:'missing return value', explanation:'main() should return 0 to indicate success, not 1.', fix:'    return 0;', points:50 },
+    ];
+
+    var LANG_EMOJIS = { Python:'🐍', Java:'☕', JavaScript:'🌐', C:'⚡', 'C++':'🔷', Go:'🐹', Rust:'🦀', SQL:'🗄️', HTML:'🌐', CSS:'🎨', Ruby:'💎' };
+
+    function getDailyChallenge() {
+        var today = new Date();
+        var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
+        return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
+    }
+
+    function getTodayString() {
+        var d = new Date();
+        return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    }
+
+    function formatDate() {
+        var d = new Date();
+        var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+        var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return "Today's Challenge — " + days[d.getDay()] + ', ' + months[d.getMonth()] + ' ' + d.getDate();
+    }
+
+    // ── Milestone ───────────────────────────────────────────
+    function getMilestone(streak) {
+        if (streak >= 30) return '🏆 Daily Legend';
+        if (streak >= 14) return '🔥 Fortnight Fighter';
+        if (streak >= 7)  return '⚡ Week Warrior';
+        if (streak >= 3)  return '🌱 Consistent Coder';
+        return null;
+    }
+
+    // ── Countdown to midnight ───────────────────────────────
+    function updateCountdown() {
+        var now = new Date();
+        var midnight = new Date(now);
+        midnight.setHours(24, 0, 0, 0);
+        var diff = midnight - now;
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        document.getElementById('countdown-timer').textContent =
+            String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    }
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+
+    // ── Render Bug Hunt challenge ───────────────────────────
+    function renderBugChallenge(ch) {
+        var card = document.getElementById('challenge-card');
+        var emoji = LANG_EMOJIS[ch.lang] || '💻';
+        var linesHTML = ch.code.map(function(line, i) {
+            return '<div class="dc-code-line" id="dc-line-'+(i+1)+'" onclick="checkDCAnswer('+(i+1)+')">' +
+                '<span class="dc-line-num">'+(i+1)+'</span>' +
+                '<span>' + line.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>' +
+                '</div>';
+        }).join('');
+
+        card.innerHTML =
+            '<div>' +
+            '<span class="challenge-type-pill type-bug">🐛 Bug Hunt</span>' +
+            '<span class="lang-badge-dc">'+emoji+' '+ch.lang+'</span>' +
+            '<span class="points-badge">⭐ '+ch.points+' XP</span>' +
+            '</div>' +
+            '<p style="font-weight:700;color:#555;margin:0.8rem 0 0.3rem;">Click the line with the bug:</p>' +
+            '<div class="dc-code-box">'+linesHTML+'</div>' +
+            '<div class="hint-row">💡 Hint: <span>'+ch.hint+'</span></div>' +
+            '<div class="dc-result" id="dc-result"></div>' +
+            '<div class="dc-explanation" id="dc-explanation">' +
+            '<strong>📝 Explanation:</strong> '+ch.explanation +
+            '<div class="dc-fix">✅ Fix: '+ch.fix+'</div>' +
+            '</div>';
+    }
+
+    // ── Render Guess the Language challenge ─────────────────
+    function renderGuessChallenge(ch) {
+        var card = document.getElementById('challenge-card');
+        var codeDisplay = ch.code.replace(/\\n/g, '\n');
+        var optsHTML = ch.options.map(function(lang) {
+            var e = LANG_EMOJIS[lang] || '💻';
+            return '<button class="dc-opt-btn" onclick="checkDCGuess(\''+lang+'\', this)">'+e+' '+lang+'</button>';
+        }).join('');
+
+        card.innerHTML =
+            '<div>' +
+            '<span class="challenge-type-pill type-guess">🌐 Guess the Language</span>' +
+            '<span class="points-badge">⭐ '+ch.points+' XP</span>' +
+            '</div>' +
+            '<p style="font-weight:700;color:#555;margin:0.8rem 0 0.3rem;">What language is this code written in?</p>' +
+            '<div class="dc-code-box" style="font-family:\'Courier New\',monospace;color:#f8f8f2;white-space:pre;line-height:1.7;">'+codeDisplay+'</div>' +
+            '<div class="hint-row">💡 Hint: <span>'+ch.hint+'</span></div>' +
+            '<div class="dc-options">'+optsHTML+'</div>' +
+            '<div class="dc-result" id="dc-result"></div>' +
+            '<div class="dc-explanation" id="dc-explanation">' +
+            '<div class="dc-funfact">💡 '+ch.funFact+'</div>' +
+            '</div>';
+    }
+
+    // ── Answer handlers ─────────────────────────────────────
+    var dcAnswered = false;
+    var todaysChallenge = getDailyChallenge();
+
+    function checkDCAnswer(lineNum) {
+        if (dcAnswered) return;
+        var ch = todaysChallenge;
+        var lineEl = document.getElementById('dc-line-' + lineNum);
+        if (lineNum === ch.bug) {
+            lineEl.classList.add('correct');
+            dcAnswered = true;
+            showDCResult(true);
+        } else {
+            lineEl.classList.add('wrong');
+            setTimeout(function() { lineEl.classList.remove('wrong'); }, 800);
+        }
+    }
+
+    function checkDCGuess(chosen, btn) {
+        if (dcAnswered) return;
+        dcAnswered = true;
+        var ch = todaysChallenge;
+        document.querySelectorAll('.dc-opt-btn').forEach(function(b) {
+            b.disabled = true;
+            var bLang = b.textContent.split(' ').slice(1).join(' ').trim();
+            if (bLang === ch.answer) b.classList.add('correct');
+        });
+        if (chosen !== ch.answer) btn.classList.add('wrong');
+        showDCResult(chosen === ch.answer);
+    }
+
+    function showDCResult(correct) {
+        var resultEl = document.getElementById('dc-result');
+        var explEl   = document.getElementById('dc-explanation');
+        resultEl.className = 'dc-result ' + (correct ? 'success' : 'fail');
+        resultEl.textContent = correct ? '🎉 Correct! +50 XP' : '❌ Wrong! Check the explanation below.';
+        resultEl.style.display = 'block';
+        explEl.style.display = 'block';
+
+        if (correct) {
+            // Award XP
+            var xp = parseInt(localStorage.getItem('bugblaster_xp') || '0') + 50;
+            localStorage.setItem('bugblaster_xp', xp);
+
+            // Update daily streak
+            var lastDaily   = localStorage.getItem('bugblaster_last_daily');
+            var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
+            var yesterday   = new Date(); yesterday.setDate(yesterday.getDate()-1);
+            var yStr = yesterday.getFullYear()+'-'+(yesterday.getMonth()+1)+'-'+yesterday.getDate();
+
+            if (lastDaily === yStr) {
+                dailyStreak++;
+            } else if (lastDaily !== getTodayString()) {
+                dailyStreak = 1;
+            }
+            localStorage.setItem('bugblaster_daily_streak', dailyStreak);
+        }
+
+        // Mark completed
+        localStorage.setItem('bugblaster_last_daily', getTodayString());
+        localStorage.setItem('bugblaster_daily_result', correct ? 'correct' : 'wrong');
+
+        // Show "complete" state after 2s
+        setTimeout(function() {
+            document.getElementById('challenge-area').style.display = 'none';
+            document.getElementById('completed-area').style.display = 'block';
+            document.getElementById('completed-msg').textContent = correct
+                ? '✅ You crushed today\'s challenge!'
+                : '💪 Keep going — try again tomorrow!';
+            updateStreakUI();
+        }, 2000);
+    }
+
+    // ── Share ───────────────────────────────────────────────
+    function shareDailyResult() {
+        var msg = 'I completed today\'s BugBlaster Daily Challenge! 🐛 Can you solve it? #BugBlaster';
+        if (navigator.share) {
+            navigator.share({ title: 'BugBlaster Daily', text: msg, url: window.location.href })
+                .catch(function() { dcFallbackCopy(msg); });
+        } else {
+            dcFallbackCopy(msg);
+        }
+    }
+
+    function dcFallbackCopy(text) {
+        navigator.clipboard.writeText(text).then(function() {
+            var btn = document.querySelector('.share-daily-btn');
+            if (btn) {
+                var o = btn.textContent;
+                btn.textContent = 'Copied! ✅';
+                btn.style.background = '#58CC02'; btn.style.color = 'white';
+                setTimeout(function() { btn.textContent = o; btn.style.background = 'white'; btn.style.color = '#58CC02'; }, 2000);
+            }
+        });
+    }
+
+    // ── Update streak UI ────────────────────────────────────
+    function updateStreakUI() {
+        var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
+        document.getElementById('daily-streak-badge').textContent = '🔥 Daily Streak: ' + dailyStreak + ' day' + (dailyStreak !== 1 ? 's' : '');
+        var milestone = getMilestone(dailyStreak);
+        var mEl = document.getElementById('milestone-badge');
+        if (milestone && mEl) { mEl.textContent = milestone; mEl.style.display = 'inline-block'; }
+    }
+
+    // ── Init ────────────────────────────────────────────────
+    document.getElementById('daily-date-badge').textContent = formatDate();
+    updateStreakUI();
+
+    var lastDaily  = localStorage.getItem('bugblaster_last_daily');
+    var todayStr   = getTodayString();
+
+    if (lastDaily === todayStr) {
+        // Already completed today
+        document.getElementById('challenge-area').style.display = 'none';
+        document.getElementById('completed-area').style.display = 'block';
+        var prevResult = localStorage.getItem('bugblaster_daily_result');
+        document.getElementById('completed-msg').textContent = prevResult === 'correct'
+            ? '✅ You already crushed today\'s challenge!'
+            : '💪 You attempted today\'s challenge. Try again tomorrow!';
+    } else {
+        // Render today's challenge
+        if (todaysChallenge.type === 'bug') {
+            renderBugChallenge(todaysChallenge);
+        } else {
+            renderGuessChallenge(todaysChallenge);
+        }
+    }
+    </script>
+</body>
+</html>

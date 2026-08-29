@@ -20,6 +20,7 @@
             <li><a href="index.html" class="active">Home</a></li>
             <li><a href="practice.html">Practice</a></li>
             <li><a href="game.html">Bug Hunter 🎮</a></li>
+            <li><a href="daily.html">Daily 📅</a></li>
             <li><a href="leaderboard.html">Leaderboard</a></li>
         </ul>
         <div class="gamification-nav">
@@ -53,6 +54,18 @@
             </div>
         </div>
 
+
+        <!-- Daily Challenge Widget -->
+        <section class="daily-widget-section" style="max-width:720px;margin:0 auto 2rem;padding:0 5%;">
+            <div id="daily-widget" style="background:white;border:2px solid #58CC02;border-radius:20px;padding:1.5rem 2rem;box-shadow:0 4px 16px rgba(88,204,2,0.1);display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;">
+                <div>
+                    <div style="font-size:1.1rem;font-weight:900;color:#3c3c3c;margin-bottom:4px;">📅 Daily Challenge</div>
+                    <div id="widget-date" style="color:#777;font-size:0.9rem;font-weight:700;margin-bottom:6px;"></div>
+                    <div id="widget-type" style="color:#58CC02;font-weight:900;font-size:1rem;"></div>
+                </div>
+                <a id="widget-cta" href="daily.html" style="background:#58CC02;color:white;padding:12px 24px;border-radius:14px;text-decoration:none;font-weight:900;font-size:1rem;box-shadow:0 4px 0 #46A302;white-space:nowrap;display:inline-block;">Solve Today's Challenge →</a>
+            </div>
+        </section>
         <section class="features">
             <div class="feature-card">
                 <div class="icon">🤖</div>
@@ -78,5 +91,40 @@
         <script src="auth.js"></script>
     <script src="gamification.js"></script>
     <script src="script.js"></script>
+    <script>
+        // Daily Challenge Widget
+        (function() {
+            var DAILY_TYPES = [
+                'Python Bug Hunt 🐛','Java Bug Hunt 🐛','Guess the Language 🌐','JavaScript Bug Hunt 🐛',
+                'Python Bug Hunt 🐛','SQL Query 🗄️','C Bug Hunt 🐛','Python Bug Hunt 🐛',
+                'Guess the Language 🌐','Java Bug Hunt 🐛','C++ Bug Hunt 🔷','Guess the Language 🌐',
+                'Python Bug Hunt 🐛','JavaScript Bug Hunt 🐛','Guess the Language 🌐','Java Bug Hunt 🐛',
+                'C Bug Hunt 🐛','Guess the Language 🌐','Python Bug Hunt 🐛','JavaScript Bug Hunt 🌐',
+                'Guess the Language 🌐','C++ Bug Hunt 🔷','Guess the Language 🌐','Python Bug Hunt 🐛',
+                'Java Bug Hunt 🐛','SQL Query 🗄️','JavaScript Bug Hunt 🌐','Guess the Language 🌐',
+                'Python Bug Hunt 🐛','C Bug Hunt 🐛'
+            ];
+            var today = new Date();
+            var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
+            var typeLabel = DAILY_TYPES[seed % DAILY_TYPES.length];
+            var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            var dateStr = days[today.getDay()] + ', ' + months[today.getMonth()] + ' ' + today.getDate();
+
+            var dateEl = document.getElementById('widget-date');
+            var typeEl = document.getElementById('widget-type');
+            var ctaEl  = document.getElementById('widget-cta');
+            if (dateEl) dateEl.textContent = dateStr;
+            if (typeEl) typeEl.textContent = typeLabel;
+
+            var todayKey = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            if (localStorage.getItem('bugblaster_last_daily') === todayKey && ctaEl) {
+                ctaEl.textContent = '✅ Completed! Come back tomorrow';
+                ctaEl.style.background = '#e5e5e5';
+                ctaEl.style.color = '#777';
+                ctaEl.style.boxShadow = 'none';
+            }
+        })();
+    </script>
 </body>
 </html>

@@ -260,6 +260,23 @@
         .shake {
             animation: shake 0.4s;
         }
+    
+        button { transition: all 0.2s; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        button:active { transform: scale(0.97); }
+        
+        @keyframes greenPulse { 0%{background:#1a4a1a;} 50%{background:#2d8a2d;} 100%{background:#1a4a1a;} }
+        .code-line.correct { animation: greenPulse 0.5s ease forwards; background: #1a4a1a; }
+        
+        #scroll-top {
+            position: fixed; bottom: 30px; right: 30px;
+            background: #58CC02; color: white; border: none;
+            width: 50px; height: 50px; border-radius: 50%;
+            font-size: 24px; font-weight: bold; cursor: pointer;
+            display: none; align-items: center; justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10000;
+        }
+        #scroll-top:hover { background: #46A302; transform: translateY(-3px); }
     </style>
 </head>
 <body>
@@ -317,6 +334,7 @@
             </div>
         </div>
     </main>
+    <button id="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
 
     <script>
         // Global State
@@ -555,6 +573,11 @@ console.log(arr[3]);', correctLine: 2, hint: 'index out of bounds', explain: 'Va
         function nextChallenge() {
             startGame();
         }
+    
+        window.onscroll = function() {
+            var btn = document.getElementById('scroll-top');
+            if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+        };
     </script>
 </body>
 </html>

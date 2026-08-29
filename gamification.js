@@ -187,22 +187,16 @@ class Gamification {
 
     initScrollToTop() {
         const btn = document.createElement('button');
-        btn.id = 'scroll-to-top';
-        btn.className = 'scroll-to-top';
+        btn.id = 'scroll-top';
         btn.innerHTML = '↑';
         document.body.appendChild(btn);
-
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                btn.classList.add('visible');
-            } else {
-                btn.classList.remove('visible');
-            }
+            if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
         });
-
         btn.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+    });
     }
 }
 

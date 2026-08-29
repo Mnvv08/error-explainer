@@ -28,7 +28,7 @@ body {
 
 
 @keyframes fadeInPage {
-    from { opacity: 0; }
+    from { opacity: 1; }
     to { opacity: 1; }
 }
 
@@ -52,7 +52,7 @@ a {
     font-weight: 900;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    opacity: 0;
+    opacity: 1;
     visibility: hidden;
     transform: translateY(20px);
     transition: all 0.3s;
@@ -180,7 +180,8 @@ main {
     text-transform: uppercase;
     letter-spacing: 1px;
     position: relative;
-    z-index: 10;
+    z-index: 100;
+    pointer-events: auto;
 }
 
 .cta-button:active, .hint-btn:active {
@@ -469,14 +470,14 @@ footer {
     animation: floatUp 1.5s ease-out forwards;
 }
 .xp-float-popup.fade-out {
-    opacity: 0;
+    opacity: 1;
     transition: opacity 0.5s;
 }
 @keyframes floatUp {
-    0% { transform: translateY(0); opacity: 0; }
+    0% { transform: translateY(0); opacity: 1; }
     20% { transform: translateY(-20px); opacity: 1; }
     80% { transform: translateY(-80px); opacity: 1; }
-    100% { transform: translateY(-100px); opacity: 0; }
+    100% { transform: translateY(-100px); opacity: 1; }
 }
 
 /* Level Up Modal */
@@ -512,7 +513,7 @@ footer {
     font-size: 1.5rem;
 }
 @keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
+    0% { transform: scale(0.8); opacity: 1; }
     100% { transform: scale(1); opacity: 1; }
 }
 .confetti {
@@ -528,7 +529,7 @@ footer {
 
 .hidden {
     display: none !important;
-     !important;
+    pointer-events: none !important;
 }
 
 /* Loading Spinner */
@@ -905,7 +906,7 @@ pre {
 .result-section:nth-child(4) { animation-delay: 0.7s; }
 
 @keyframes slideUpFade {
-    from { opacity: 0; transform: translateY(20px); }
+    from { opacity: 1; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1143,7 +1144,7 @@ pre {
 
 .leaderboard-table tbody tr {
     animation: slideInRight 0.5s ease-out forwards;
-    opacity: 0;
+    opacity: 1;
     transform: translateX(30px);
 }
 .leaderboard-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
@@ -1173,7 +1174,7 @@ pre {
 }
 
 @keyframes fall {
-  to { transform: translateY(105vh) rotate(360deg); opacity: 0; }
+  to { transform: translateY(105vh) rotate(360deg); opacity: 1; }
 }
 
 button { transition: all 0.2s; }
@@ -1203,7 +1204,7 @@ button { transition: all 0.2s; }
 .result-section:nth-child(2) { animation: fadeInStagger 0.3s ease 0.2s both; }
 .result-section:nth-child(3) { animation: fadeInStagger 0.3s ease 0.3s both; }
 .result-section:nth-child(4) { animation: fadeInStagger 0.3s ease 0.4s both; }
-@keyframes fadeInStagger { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInStagger { from { opacity: 1; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 .badge:hover { animation: spinBadge 1s linear; }
 @keyframes spinBadge { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }

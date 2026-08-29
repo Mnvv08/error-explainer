@@ -79,6 +79,9 @@ class Gamification {
         if (!document.getElementById('xp-popup-container')) {
             const container = document.createElement('div');
             container.id = 'xp-popup-container';
+            container.style.pointerEvents = 'none';
+            container.style.position = 'fixed';
+            container.style.zIndex = '999';
             document.body.appendChild(container);
         }
 

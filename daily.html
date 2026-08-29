@@ -203,11 +203,9 @@ function showFeedback(correct, msg) {
   fb.className = 'feedback '+(correct?'correct':'wrong');
   fb.textContent = msg;
   fb.style.display = 'block';
-  if(correct) {
-    var nb = document.getElementById('next-btn');
-    nb.style.display = 'inline-block';
-    nb.textContent = currentQ < 2 ? 'Next Question →' : 'Finish! 🎉';
-  }
+  var nb = document.getElementById('next-btn');
+  nb.style.display = 'inline-block';
+  nb.textContent = currentQ < 2 ? 'Next Question →' : 'Finish! 🎉';
 }
 
 function nextQuestion() {

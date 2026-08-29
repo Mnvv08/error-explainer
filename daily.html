@@ -258,10 +258,16 @@
         </div>
         <!-- Challenge Area (shown when NOT completed today) -->
         <div id="challenge-area">
-            <div id="challenge-timer" style="text-align:center;margin-bottom:1rem;font-size:1.8rem;font-weight:900;color:#58CC02;background:#1e1e1e;border-radius:12px;padding:8px;max-width:200px;margin-left:auto;margin-right:auto;">⏱ 60s</div>
+            
+            <div id="daily-progress" style="text-align:center;color:#777;font-weight:900;margin-bottom:1rem;font-size:1.1rem;">
+                Question 1 of 3 &nbsp;<span id="progress-dots" style="color:#58CC02;">●○○</span>
+            </div>
+<div id="challenge-timer" style="text-align:center;margin-bottom:1rem;font-size:1.8rem;font-weight:900;color:#58CC02;background:#1e1e1e;border-radius:12px;padding:8px;max-width:200px;margin-left:auto;margin-right:auto;">⏱ 60s</div>
             <div class="challenge-card" id="challenge-card">
                 <!-- Populated by JS -->
             </div>
+
+            <button id="next-question-btn" onclick="loadNextDailyQuestion()" style="display:none;background:#FFD700;color:#9a7c00;padding:14px 28px;border-radius:20px;font-weight:900;font-size:1.1rem;border:2px solid #e5c100;cursor:pointer;margin:1.5rem auto 0;box-shadow:0 4px 0 #e5c100;">Next Question &rarr;</button>
         </div>
 
         <!-- Completed Area (shown when already done today) -->
@@ -323,11 +329,7 @@
 
     var LANG_EMOJIS = { Python:'🐍', Java:'☕', JavaScript:'🌐', C:'⚡', 'C++':'🔷', Go:'🐹', Rust:'🦀', SQL:'🗄️', HTML:'🌐', CSS:'🎨', Ruby:'💎' };
 
-    function getDailyChallenge() {
-        var today = new Date();
-        var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate();
-        return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
-    }
+    
 
     function getTodayString() {
         var d = new Date();
@@ -469,8 +471,43 @@
     }
 
     // ── Answer handlers ─────────────────────────────────────
+    
+    var dailyQuestionsTotal = 3;
+    var dailyQuestionsAnswered = 0;
+    var currentDailyIndex = 0;
+
+    function getDailyChallenge(indexOffset) {
+        var today = new Date();
+        var seed = today.getFullYear() * 10000 + (today.getMonth()+1) * 100 + today.getDate() + (indexOffset || 0);
+        return DAILY_CHALLENGES[seed % DAILY_CHALLENGES.length];
+    }
+
+    function loadNextDailyQuestion() {
+        document.getElementById('next-question-btn').style.display = 'none';
+        document.getElementById('dc-result').style.display = 'none';
+        document.getElementById('dc-explanation').style.display = 'none';
+        
+        todaysChallenge = getDailyChallenge(dailyQuestionsAnswered);
+        dcAnswered = false;
+        dcTimeLeft = 60;
+        
+        var dots = Array(dailyQuestionsTotal).fill('○');
+        for(var i=0; i<=dailyQuestionsAnswered; i++) {
+            dots[i] = '●';
+        }
+        document.getElementById('daily-progress').innerHTML = 'Question ' + (dailyQuestionsAnswered+1) + ' of ' + dailyQuestionsTotal + ' &nbsp;<span style="color:#58CC02;">' + dots.join('') + '</span>';
+        
+        if (todaysChallenge.type === 'bug') {
+            renderBugChallenge(todaysChallenge);
+        } else {
+            renderGuessChallenge(todaysChallenge);
+        }
+        
+        startCountdown();
+    }
+
     var dcAnswered = false;
-    var todaysChallenge = getDailyChallenge();
+    var todaysChallenge = getDailyChallenge(0);
 
     function checkDCAnswer(lineNum) {
         if (dcAnswered) return;
@@ -509,38 +546,49 @@
         resultEl.style.display = 'block';
         explEl.style.display = 'block';
 
-        if (correct) {
-            // Award XP
-            var xp = parseInt(localStorage.getItem('bugblaster_xp') || '0') + 50;
-            localStorage.setItem('bugblaster_xp', xp);
+        if(dcTimerInterval) clearInterval(dcTimerInterval);
 
-            // Update daily streak
-            var lastDaily   = localStorage.getItem('bugblaster_last_daily');
-            var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
-            var yesterday   = new Date(); yesterday.setDate(yesterday.getDate()-1);
-            var yStr = yesterday.getFullYear()+'-'+(yesterday.getMonth()+1)+'-'+yesterday.getDate();
-
-            if (lastDaily === yStr) {
-                dailyStreak++;
-            } else if (lastDaily !== getTodayString()) {
-                dailyStreak = 1;
+        dailyQuestionsAnswered++;
+        
+        if (dailyQuestionsAnswered < dailyQuestionsTotal) {
+            // Show Next Question button
+            document.getElementById('next-question-btn').style.display = 'block';
+        } else {
+            // All 3 questions done
+            if (correct) {
+                // We'll just give the completion XP for the whole session once? Or per question?
+                // The prompt logic implies we mark complete at the end.
             }
-            localStorage.setItem('bugblaster_daily_streak', dailyStreak);
+            markDailyComplete();
+            setTimeout(function() {
+                document.getElementById('challenge-area').style.display = 'none';
+                document.getElementById('completed-area').style.display = 'block';
+                document.getElementById('completed-msg').textContent = '✅ You crushed today\'s challenge!';
+                updateStreakUI();
+            }, 2000);
         }
+    }
 
-        // Mark completed
-        localStorage.setItem('bugblaster_last_daily', getTodayString());
-        localStorage.setItem('bugblaster_daily_result', correct ? 'correct' : 'wrong');
-
-        // Show "complete" state after 2s
-        setTimeout(function() {
-            document.getElementById('challenge-area').style.display = 'none';
-            document.getElementById('completed-area').style.display = 'block';
-            document.getElementById('completed-msg').textContent = correct
-                ? '✅ You crushed today\'s challenge!'
-                : '💪 Keep going — try again tomorrow!';
-            updateStreakUI();
-        }, 2000);
+    function markDailyComplete() {
+        var today = new Date().toDateString();
+        localStorage.setItem('bugblaster_last_daily', today);
+        
+        var lastDaily = localStorage.getItem('bugblaster_last_daily_prev');
+        var yesterday = new Date(Date.now() - 86400000).toDateString();
+        var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak')||'0');
+        
+        if (lastDaily === yesterday) {
+            dailyStreak++;
+        } else {
+            dailyStreak = 1;
+        }
+        
+        localStorage.setItem('bugblaster_daily_streak', dailyStreak);
+        localStorage.setItem('bugblaster_last_daily_prev', today);
+        
+        var xp = parseInt(localStorage.getItem('bugblaster_xp')||'0');
+        xp += 50 * dailyQuestionsTotal; // e.g. 150 XP for completing all 3
+        localStorage.setItem('bugblaster_xp', xp);
     }
 
     // ── Share ───────────────────────────────────────────────

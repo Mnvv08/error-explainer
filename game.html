@@ -279,6 +279,112 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); z-index: 10000;
         }
         #scroll-top:hover { background: #46A302; transform: translateY(-3px); }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+        .mode-btn {
+            padding: 12px 24px;
+            border: 2px solid #58CC02;
+            background: white;
+            color: #58CC02;
+            border-radius: 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: #58CC02;
+            color: white;
+            box-shadow: 0 4px 0 #46A302;
+        }
+        .mode-btn:hover:not(.active) {
+            background: #f0fff4;
+        }
+
+        /* GTL Arena */
+        #gtl-arena { text-align: center; }
+        .gtl-countdown {
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: #FF9600;
+            margin-bottom: 12px;
+        }
+        .gtl-code-box {
+            background: #1e1e1e;
+            color: #f8f8f2;
+            border-radius: 14px;
+            padding: 20px 24px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1.5rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .gtl-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 1.2rem;
+        }
+        .gtl-opt-btn {
+            padding: 14px 10px;
+            border: 2px solid #e5e5e5;
+            background: white;
+            border-radius: 14px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 1rem;
+            font-weight: 900;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+        }
+        .gtl-opt-btn:hover:not(:disabled) {
+            border-color: #58CC02;
+            background: #f0fff4;
+            transform: translateY(-2px);
+        }
+        .gtl-opt-btn.correct {
+            background: #58CC02;
+            border-color: #46A302;
+            color: white;
+            box-shadow: 0 4px 0 #46A302;
+        }
+        .gtl-opt-btn.wrong {
+            background: #ff4b4b;
+            border-color: #cc0000;
+            color: white;
+        }
+        .gtl-opt-btn:disabled { cursor: default; }
+        .gtl-result {
+            font-size: 1.2rem;
+            font-weight: 900;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .gtl-result.success { background: #d7ffb8; color: #46A302; border: 2px solid #58CC02; }
+        .gtl-result.fail    { background: #ffcccc; color: #cc0000; border: 2px solid #ff4b4b; }
+        .gtl-funfact {
+            background: #fffbea;
+            border: 2px solid #FFD700;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 700;
+            color: #9a7c00;
+            margin-bottom: 1rem;
+            display: none;
+            text-align: left;
+        }
     </style>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
@@ -312,6 +418,12 @@
             </div>
         </header>
 
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="mode-bug-btn" onclick="switchMode('bug', this)">🐛 Bug Hunter</button>
+            <button class="mode-btn" id="mode-gtl-btn" onclick="switchMode('gtl', this)">🌐 Guess the Language</button>
+        </div>
+
         <div id="start-screen">
             <div class="language-selector">
                 <div class="lang-btns" id="lang-btns-container">
@@ -344,6 +456,16 @@
                 <p id="explanation-text"></p>
                 <button class="cta-button" style="margin-top: 15px; width: 100%;" onclick="nextChallenge()">Next Challenge 🎯</button>
             </div>
+        </div>
+
+        <!-- Guess the Language Arena -->
+        <div id="gtl-arena" class="hidden">
+            <div class="gtl-countdown">⏱ <span id="gtl-timer">20</span>s</div>
+            <div class="gtl-code-box" id="gtl-code-box"></div>
+            <div class="gtl-options" id="gtl-options"></div>
+            <div class="gtl-result" id="gtl-result"></div>
+            <div class="gtl-funfact" id="gtl-funfact"></div>
+            <button class="cta-button hidden" id="gtl-next-btn" style="width:100%;" onclick="nextGTLChallenge()">Next Challenge 🎯</button>
         </div>
     </main>
     <button id="scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
@@ -564,6 +686,170 @@
             startGame();
         }
     
+
+        // ═══════════════════════════════════════════
+        // GUESS THE LANGUAGE MODE
+        // ═══════════════════════════════════════════
+        var currentMode = 'bug';
+
+        function switchMode(mode, btn) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(function(b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+
+            var bugScreen = document.getElementById('start-screen');
+            var bugHeader = document.querySelector('.game-header p');
+
+            if (mode === 'gtl') {
+                bugScreen.classList.add('hidden');
+                document.getElementById('game-arena').classList.add('hidden');
+                document.getElementById('gtl-arena').classList.add('hidden');
+                document.querySelector('h2').textContent = 'Guess the Language 🌐';
+                if (bugHeader) bugHeader.textContent = "Can you identify the programming language?";
+                startGTL();
+            } else {
+                document.querySelector('h2').textContent = 'Bug Hunter 🎮';
+                if (bugHeader) bugHeader.textContent = "Can you spot the bug before the timer runs out?";
+                document.getElementById('gtl-arena').classList.add('hidden');
+                bugScreen.classList.remove('hidden');
+                clearInterval(gtlTimerInterval);
+            }
+        }
+
+        var LANG_CHALLENGES = [
+            { code: 'print("Hello World")', answer: 'Python' },
+            { code: 'console.log("Hello World")', answer: 'JavaScript' },
+            { code: 'System.out.println("Hello World");', answer: 'Java' },
+            { code: 'printf("Hello World");', answer: 'C' },
+            { code: 'cout << "Hello World";', answer: 'C++' },
+            { code: 'def greet(name):\n    return "Hello " + name', answer: 'Python' },
+            { code: 'for(let i=0; i<5; i++) {\n    console.log(i);\n}', answer: 'JavaScript' },
+            { code: 'ArrayList<String> list = new ArrayList<>();', answer: 'Java' },
+            { code: 'int arr[] = {1, 2, 3, 4, 5};', answer: 'C' },
+            { code: 'vector<int> v = {1, 2, 3};', answer: 'C++' },
+            { code: 'x = [i**2 for i in range(10)]', answer: 'Python' },
+            { code: 'const arrow = () => console.log("hi");', answer: 'JavaScript' },
+            { code: 'public static void main(String[] args) {}', answer: 'Java' },
+            { code: '#include <stdio.h>\nvoid main()', answer: 'C' },
+            { code: 'template<typename T>\nvoid swap(T& a, T& b)', answer: 'C++' },
+        ];
+
+        var LANG_FUNFACTS = {
+            'Python':     '🐍 Python is named after Monty Python, not the snake!',
+            'JavaScript': '🌐 JavaScript was created in just 10 days by Brendan Eich in 1995!',
+            'Java':       '☕ Java runs on 3 billion devices worldwide!',
+            'C':          '⚡ C was created in 1972 and still powers most operating systems!',
+            'C++':        '🔷 C++ was originally called "C with Classes" by Bjarne Stroustrup!'
+        };
+
+        var LANG_EMOJIS = { 'Python': '🐍', 'JavaScript': '🌐', 'Java': '☕', 'C': '⚡', 'C++': '🔷' };
+        var ALL_LANGS = ['Python', 'JavaScript', 'Java', 'C', 'C++'];
+
+        var gtlTimerInterval = null;
+        var gtlTimeLeft = 20;
+        var gtlActive = false;
+        var gtlUsedIndexes = [];
+        var currentGTL = null;
+
+        function startGTL() {
+            // Pick unused challenge
+            var available = LANG_CHALLENGES.map(function(_, i) { return i; }).filter(function(i) {
+                return gtlUsedIndexes.indexOf(i) === -1;
+            });
+            if (available.length === 0) {
+                gtlUsedIndexes = [];
+                available = LANG_CHALLENGES.map(function(_, i) { return i; });
+            }
+            var idx = available[Math.floor(Math.random() * available.length)];
+            gtlUsedIndexes.push(idx);
+            currentGTL = LANG_CHALLENGES[idx];
+
+            // Render code
+            document.getElementById('gtl-code-box').textContent = currentGTL.code.replace(/\\n/g, '\n');
+            document.getElementById('gtl-result').style.display = 'none';
+            document.getElementById('gtl-funfact').style.display = 'none';
+            document.getElementById('gtl-next-btn').classList.add('hidden');
+
+            // Build 4 options: correct + 3 random wrong
+            var wrong = ALL_LANGS.filter(function(l) { return l !== currentGTL.answer; });
+            wrong = wrong.sort(function() { return 0.5 - Math.random(); }).slice(0, 3);
+            var options = wrong.concat([currentGTL.answer]).sort(function() { return 0.5 - Math.random(); });
+
+            var optContainer = document.getElementById('gtl-options');
+            optContainer.innerHTML = '';
+            options.forEach(function(lang) {
+                var btn = document.createElement('button');
+                btn.className = 'gtl-opt-btn';
+                btn.textContent = (LANG_EMOJIS[lang] || '') + ' ' + lang;
+                btn.onclick = function() { handleGTLAnswer(lang, btn); };
+                optContainer.appendChild(btn);
+            });
+
+            // Start timer
+            clearInterval(gtlTimerInterval);
+            gtlTimeLeft = 20;
+            gtlActive = true;
+            document.getElementById('gtl-timer').textContent = gtlTimeLeft;
+            document.getElementById('gtl-arena').classList.remove('hidden');
+
+            gtlTimerInterval = setInterval(function() {
+                if (!gtlActive) return;
+                gtlTimeLeft--;
+                document.getElementById('gtl-timer').textContent = gtlTimeLeft;
+                if (gtlTimeLeft <= 0) {
+                    clearInterval(gtlTimerInterval);
+                    handleGTLAnswer(null, null); // timeout = wrong
+                }
+            }, 1000);
+        }
+
+        function handleGTLAnswer(chosen, clickedBtn) {
+            if (!gtlActive) return;
+            gtlActive = false;
+            clearInterval(gtlTimerInterval);
+
+            var correct = currentGTL.answer;
+            var resultEl = document.getElementById('gtl-result');
+            var factEl = document.getElementById('gtl-funfact');
+            var opts = document.querySelectorAll('.gtl-opt-btn');
+
+            // Colour all buttons
+            opts.forEach(function(b) {
+                b.disabled = true;
+                var lang = b.textContent.replace(/[^a-zA-Z+]/g, '').trim();
+                // extract lang name from button text
+                var btnLang = b.textContent.split(' ').slice(1).join(' ').trim();
+                if (btnLang === correct) b.classList.add('correct');
+            });
+            if (clickedBtn && clickedBtn.textContent.split(' ').slice(1).join(' ').trim() !== correct) {
+                clickedBtn.classList.add('wrong');
+            }
+
+            var isCorrect = chosen === correct;
+            resultEl.className = 'gtl-result ' + (isCorrect ? 'success' : 'fail');
+            resultEl.textContent = isCorrect
+                ? '✅ Correct! +15 XP'
+                : '❌ Wrong! It was ' + (LANG_EMOJIS[correct] || '') + ' ' + correct;
+            resultEl.style.display = 'block';
+
+            factEl.textContent = '💡 ' + (LANG_FUNFACTS[correct] || '');
+            factEl.style.display = 'block';
+
+            document.getElementById('gtl-next-btn').classList.remove('hidden');
+
+            // Award XP
+            if (isCorrect) {
+                xp += 15;
+                localStorage.setItem('bugblaster_xp', xp);
+                var xpEl = document.getElementById('nav-xp');
+                if (xpEl) xpEl.textContent = xp;
+            }
+        }
+
+        function nextGTLChallenge() {
+            startGTL();
+        }
+
         window.onscroll = function() {
             var btn = document.getElementById('scroll-top');
             if(btn) btn.style.display = window.scrollY > 300 ? 'flex' : 'none';

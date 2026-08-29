@@ -333,6 +333,8 @@
             
             <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 Use Hint (-5 XP)</button>
             
+            <div id="lang-badge" style="display:none; background:white; border:2px solid #58CC02; color:#58CC02; border-radius:20px; padding:5px 15px; font-weight:900; font-size:14px; margin-bottom:10px;"></div>
+
             <div class="code-box" id="code-box"></div>
             
             <div id="result-banner" class="result-banner hidden"></div>
@@ -447,6 +449,14 @@
             currentChallenge = CHALLENGE_BANK[chosenIndex];
             usedIndexes.push(chosenIndex);
             localStorage.setItem('bugblaster_used_indexes', JSON.stringify(usedIndexes));
+
+            // Show language badge above code block
+            var langEmojis = { 'Python': '🐍', 'Java': '☕', 'C': '⚡', 'C++': '🔷', 'JavaScript': '🌐' };
+            var badge = document.getElementById('lang-badge');
+            if (badge) {
+                badge.textContent = (langEmojis[currentChallenge.lang] || '💻') + ' ' + currentChallenge.lang;
+                badge.style.display = 'inline-block';
+            }
 
             renderCode(currentChallenge.code);
             

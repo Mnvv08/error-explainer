@@ -149,7 +149,7 @@ main {
     align-items: center;
     justify-content: space-between;
     gap: 4rem;
-    margin-bottom: 6rem;
+    margin-bottom: 10rem;
 }
 
 .hero-content {
@@ -185,6 +185,8 @@ main {
     transition: transform 0.1s, box-shadow 0.1s;
     text-transform: uppercase;
     letter-spacing: 1px;
+    position: relative;
+    z-index: 10;
 }
 
 .cta-button:active, .hint-btn:active {
@@ -929,6 +931,9 @@ pre {
     font-size: 1.2rem;
     letter-spacing: 1px;
     margin-bottom: 2rem;
+    pointer-events: none;
+    position: relative;
+    z-index: 1;
 }
 .marquee-content {
     display: inline-block;

@@ -17,6 +17,33 @@
 
         .daily-page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
+
+        /* Intro Card */
+        .intro-card {
+            background: white; border: 2px solid #e5e5e5;
+            border-radius: 20px; padding: 2.5rem 2rem; margin-bottom: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06); text-align: center;
+        }
+        .intro-card h2 { font-size: 1.8rem; font-weight: 900; color: #3c3c3c; margin: 0 0 .5rem; }
+        .intro-card p { color: #555; font-weight: 700; margin: .3rem 0; font-size: 1.05rem; }
+        .intro-preview-box {
+            background: #f7f7f7; border-radius: 12px; padding: 1.5rem;
+            margin: 1.5rem 0; display: inline-block; text-align: left;
+        }
+        .intro-preview-box div { margin-bottom: 8px; font-weight: 700; color: #333; }
+        .start-btn {
+            background: #58CC02; color: white; padding: 16px 36px;
+            border-radius: 30px; font-weight: 900; font-size: 1.2rem;
+            border: none; cursor: pointer; box-shadow: 0 6px 0 #46A302;
+            transition: all 0.2s; animation: gentlePulse 2s infinite;
+        }
+        .start-btn:hover { background: #61df02; transform: translateY(-2px); box-shadow: 0 8px 0 #46A302; }
+        .start-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #46A302; }
+        @keyframes gentlePulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
+        
+        .fade-out { opacity: 0; transition: opacity 0.4s ease; pointer-events: none; }
+        .fade-in { opacity: 1; transition: opacity 0.4s ease; }
+        .hidden-start { display: none; }
         /* ── Date Header ─────────────────────────────── */
         .daily-header { text-align: center; margin-bottom: 2rem; }
         .daily-header h1 { font-size: 2.4rem; font-weight: 900; color: #3c3c3c; margin: 0 0 .4rem; }
@@ -210,6 +237,27 @@
             <div class="countdown-timer" id="countdown-timer">--:--:--</div>
         </div>
 
+
+        <!-- Intro Area -->
+        <div id="intro-area" class="intro-card">
+            <h2>📅 Daily Challenge</h2>
+            <div id="intro-date" style="color:#777;font-weight:700;margin-bottom:1rem;"></div>
+            
+            <div class="streak-row" style="margin: 1rem 0;">
+                <div class="daily-streak-badge" id="intro-streak-badge" style="font-size:0.9rem;padding:6px 16px;">🔥 Daily Streak: 0 days</div>
+            </div>
+
+            <div class="intro-preview-box">
+                <div style="color:#555;font-size:0.9rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Today's Challenge:</div>
+                <div id="intro-type"></div>
+                <div style="color:#FFD700;font-size:1.1rem;margin-top:12px;">⭐ 50 XP Reward</div>
+            </div>
+            
+            <div style="color:#777;font-weight:700;margin-bottom:1.5rem;">⏰ Next challenge in <span id="intro-timer" style="color:#58CC02;font-weight:900;"></span></div>
+            
+            <button class="start-btn" onclick="startDailyChallenge()">START TODAY'S CHALLENGE 🎯</button>
+            <p style="margin-top:1.5rem;font-size:0.9rem;color:#777;">Complete daily challenges to build your streak! 🔥</p>
+        </div>
         <!-- Challenge Area (shown when NOT completed today) -->
         <div id="challenge-area">
             <div class="challenge-card" id="challenge-card">
@@ -312,11 +360,27 @@
         var h = Math.floor(diff / 3600000);
         var m = Math.floor((diff % 3600000) / 60000);
         var s = Math.floor((diff % 60000) / 1000);
-        document.getElementById('countdown-timer').textContent =
+        var tStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+        document.getElementById('countdown-timer').textContent = tStr;
+        if(document.getElementById('intro-timer')) document.getElementById('intro-timer').textContent = tStr;
+        //
             String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
     }
     setInterval(updateCountdown, 1000);
     updateCountdown();
+
+    
+    function startDailyChallenge() {
+        var intro = document.getElementById('intro-area');
+        intro.classList.add('fade-out');
+        setTimeout(function() {
+            intro.style.display = 'none';
+            var challenge = document.getElementById('challenge-area');
+            challenge.style.display = 'block';
+            challenge.style.opacity = '0';
+            setTimeout(function() { challenge.style.opacity = '1'; challenge.style.transition = 'opacity 0.4s ease'; }, 50);
+        }, 400);
+    }
 
     // ── Render Bug Hunt challenge ───────────────────────────
     function renderBugChallenge(ch) {
@@ -476,21 +540,37 @@
 
     // ── Init ────────────────────────────────────────────────
     document.getElementById('daily-date-badge').textContent = formatDate();
+    if(document.getElementById('intro-date')) document.getElementById('intro-date').textContent = formatDate().replace("Today's Challenge — ", "");
     updateStreakUI();
 
     var lastDaily  = localStorage.getItem('bugblaster_last_daily');
     var todayStr   = getTodayString();
+    
+    // Hide areas by default
+    document.getElementById('challenge-area').style.display = 'none';
+    document.getElementById('completed-area').style.display = 'none';
+    document.getElementById('intro-area').style.display = 'none';
 
     if (lastDaily === todayStr) {
         // Already completed today
-        document.getElementById('challenge-area').style.display = 'none';
         document.getElementById('completed-area').style.display = 'block';
         var prevResult = localStorage.getItem('bugblaster_daily_result');
         document.getElementById('completed-msg').textContent = prevResult === 'correct'
             ? '✅ You already crushed today\'s challenge!'
             : '💪 You attempted today\'s challenge. Try again tomorrow!';
     } else {
-        // Render today's challenge
+        // Show Intro
+        document.getElementById('intro-area').style.display = 'block';
+        var tBadge = todaysChallenge.type === 'bug' 
+            ? '<span class="challenge-type-pill type-bug">🐛 Bug Hunt</span>' 
+            : '<span class="challenge-type-pill type-guess">🌐 Guess the Language</span>';
+        var lBadge = todaysChallenge.lang ? ('<span class="lang-badge-dc">' + (LANG_EMOJIS[todaysChallenge.lang]||'') + ' ' + todaysChallenge.lang + '</span>') : '';
+        if(document.getElementById('intro-type')) document.getElementById('intro-type').innerHTML = tBadge + (lBadge ? ' ' + lBadge : '');
+        
+        var dailyStreak = parseInt(localStorage.getItem('bugblaster_daily_streak') || '0');
+        if(document.getElementById('intro-streak-badge')) document.getElementById('intro-streak-badge').textContent = '🔥 Daily Streak: ' + dailyStreak + ' day' + (dailyStreak !== 1 ? 's' : '');
+
+        // Pre-render today's challenge so it's ready when they click start
         if (todaysChallenge.type === 'bug') {
             renderBugChallenge(todaysChallenge);
         } else {

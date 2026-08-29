@@ -1,100 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BugBlaster 🐛 | Daily Challenge 📅</title>
-    <meta name="description" content="One special coding challenge every day. Come back tomorrow for a new one!">
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
-    <style>
-        * { font-family: 'Nunito', sans-serif !important; }
-        .daily-page { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; text-align: center; }
-        
-        /* Layout Cards */
-        #intro-card, #challenge-card, #completed-card {
-            background: white; border: 2px solid #e5e5e5;
-            border-radius: 20px; padding: 2.5rem 2rem; margin-top: 2rem;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06); text-align: center;
-        }
-        #intro-card h2, #completed-card h2 { font-size: 2rem; font-weight: 900; color: #3c3c3c; margin-top: 0; margin-bottom: 0.5rem; }
-        #intro-card p, #completed-card p { color: #555; font-weight: 700; font-size: 1.1rem; margin-top: 0; }
-        
-        button {
-            background: #58CC02; color: white; padding: 16px 36px;
-            border-radius: 30px; font-weight: 900; font-size: 1.2rem;
-            border: none; cursor: pointer; box-shadow: 0 6px 0 #46A302;
-            transition: all 0.2s; margin-top: 1rem;
-        }
-        button:hover { background: #61df02; transform: translateY(-2px); box-shadow: 0 8px 0 #46A302; }
-        button:active { transform: translateY(4px); box-shadow: 0 2px 0 #46A302; }
-        
-        #progress { font-weight: 900; color: #777; font-size: 1.2rem; margin-bottom: 1rem; margin-top: 0; }
-        #timer-display {
-            font-size: 2rem; font-weight: 900; color: #58CC02; 
-            background: #1e1e1e; border-radius: 12px; padding: 10px;
-            max-width: 200px; margin: 0 auto 1.5rem; letter-spacing: 2px;
-        }
-        
-        /* Navbar additions if needed */
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <a href="index.html" class="logo" style="text-decoration:none; color:#58CC02; font-weight:900; font-size:24px;">BugBlaster 🐛</a>
-        <ul class="nav-links">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="practice.html">Practice</a></li>
-            <li><a href="game.html">Bug Hunter 🎮</a></li>
-            <li><a href="daily.html" class="active">Daily 📅</a></li>
-            <li><a href="leaderboard.html">Leaderboard</a></li>
-        </ul>
-        <div class="gamification-nav">
-            <span class="nav-stat">🔥 <span id="nav-streak">0 days</span></span>
-            <span class="nav-stat">⚡ <span id="nav-xp">0 XP</span></span>
-            <span id="nav-level-badge" class="level-badge">Lvl 1: Buggy Beginner</span>
-        </div>
-    </nav>
-    <div id="guest-banner" style="display:flex;align-items:center;justify-content:center;gap:14px;background:#fffbea;border-bottom:2px solid #FFD700;padding:10px 20px;font-weight:700;color:#9a7c00;font-size:0.95rem;">
-        🎮 Playing as guest — progress saved locally only.
-        <a href="login.html" style="color:#58CC02;text-decoration:none;font-weight:900;border:2px solid #58CC02;padding:4px 12px;border-radius:8px;">Save permanently →</a>
-    </div>
 
-    <main class="daily-page">
-        <!-- STATE 1: Intro Card -->
-        <div id="intro-card">
-            <h2>📅 Daily Challenge</h2>
-            <p id="today-date-text"></p>
-            <div style="background: linear-gradient(135deg, #FF9600, #FF6B00); color: white; border-radius: 20px; padding: 8px 16px; font-weight: 900; display: inline-block; margin-bottom: 1rem;" id="intro-streak">🔥 Daily Streak: 0</div>
-            <p style="background: #f7f7f7; padding: 15px; border-radius: 12px; font-weight: 900; color: #555; max-width: 300px; margin: 0 auto 1.5rem;">3 Questions • 50 XP Reward</p>
-            <button onclick="startDaily()">START TODAY'S CHALLENGE 🎯</button>
-        </div>
-
-        <!-- STATE 2: Challenge Area -->
-        <div id="challenge-card" style="display:none;">
-            <p id="progress">Question 1 of 3</p>
-            <div id="timer-display">⏱ 60s</div>
-            
-            <div id="question-content"></div>
-            
-            <div id="feedback" style="display:none;padding:15px;border-radius:10px;margin:15px 0;font-weight:900;font-size:1.1rem;"></div>
-            <button id="next-btn" onclick="nextQuestion()" style="display:none;margin: 10px auto 0; background: #FFD700; color: #9a7c00; box-shadow: 0 6px 0 #e5c100;"></button>
-        </div>
-
-        <!-- STATE 3: Completed Area -->
-        <div id="completed-card" style="display:none;">
-            <div style="font-size:4rem;margin-bottom:1rem;">🎉</div>
-            <h2>Daily Challenge Complete!</h2>
-            <p style="color:#FFD700;font-size:2.5rem;font-weight:900;text-shadow:0 2px 0 #e5c100; margin: 10px 0;">+50 XP</p>
-            <p style="color:#58CC02;font-weight:900;">Come back tomorrow for a new challenge!</p>
-            <button onclick="shareResult()" style="background:white;color:#58CC02;border:2px solid #58CC02;box-shadow:none;">Share My Result 🎯</button>
-        </div>
-    </main>
-
-    <script src="gamification.js"></script>
-    <script>
         var TODAYS_QUESTIONS = [
             {
                 type: 'bug',
@@ -203,7 +107,7 @@
                 html += '</div>';
                 html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
                 for(var j=0; j<q.options.length; j++) {
-                    html += '<button onclick="checkGuess(\'' + q.options[j] + '\')" style="padding:15px;background:white;border:2px solid #58CC02;border-radius:10px;font-size:15px;font-weight:900;cursor:pointer;color:#58CC02;box-shadow:none;margin-top:0;" class="guess-btn">'+q.options[j]+'</button>';
+                    html += '<button onclick="checkGuess(\\''+q.options[j]+'\\')" style="padding:15px;background:white;border:2px solid #58CC02;border-radius:10px;font-size:15px;font-weight:900;cursor:pointer;color:#58CC02;box-shadow:none;margin-top:0;" class="guess-btn">'+q.options[j]+'</button>';
                 }
                 html += '</div>';
             }
@@ -320,6 +224,4 @@
                 alert('Copied to clipboard!');
             });
         }
-    </script>
-</body>
-</html>
+    

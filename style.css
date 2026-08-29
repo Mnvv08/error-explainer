@@ -25,13 +25,7 @@ body {
     animation: fadeInPage 0.5s ease-out;
 }
 
-canvas {
-    pointer-events: none !important;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 0;
-}
+
 
 @keyframes fadeInPage {
     from { opacity: 0; }
@@ -281,12 +275,6 @@ footer {
     opacity: 1;
     animation: fadeIn 0.8s ease-out forwards;
 }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
     to {
         opacity: 1;
         transform: translateY(0);
@@ -496,7 +484,7 @@ footer {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
-    display: flex;
+    display: none; /* Make sure it doesn't block by default */
     justify-content: center;
     align-items: center;
     z-index: 2000;
@@ -540,6 +528,7 @@ footer {
 
 .hidden {
     display: none !important;
+     !important;
 }
 
 /* Loading Spinner */
@@ -907,7 +896,7 @@ pre {
 
 /* Staggered Animations for Results Card */
 .result-section {
-    opacity: 0;
+    opacity: 1;
     animation: slideUpFade 0.5s ease forwards;
 }
 .result-section:nth-child(1) { animation-delay: 0.1s; }
@@ -931,7 +920,7 @@ pre {
     font-size: 1.2rem;
     letter-spacing: 1px;
     margin-bottom: 2rem;
-    pointer-events: none;
+    
     position: relative;
     z-index: 1;
 }
